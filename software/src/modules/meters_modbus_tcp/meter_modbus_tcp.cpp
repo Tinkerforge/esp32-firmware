@@ -1756,7 +1756,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VARTAFlexGridAddress::GridPowerSF) {
             varta_flex.grid_power_sf = static_cast<int16_t>(c16.u);
         }
-        else if (spec->start_address == VARTAFlexGridAddress::ScaledGridPower_Virtual) {
+        else if (spec->start_address == VARTAFlexGridAddress::GridPowerScaled_Virtual) {
             value = varta_flex.grid_power * get_sun_spec_scale_factor(varta_flex.grid_power_sf);
         }
     }
@@ -1770,6 +1770,9 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VARTAFlexBatteryAddress::TotalChargeEnergy) {
             varta_flex.battery_total_charge_energy = value;
         }
+        else if (spec->start_address == VARTAFlexBatteryAddress::InstalledCapacity) {
+            varta_flex.battery_installed_capacity = value;
+        }
         else if (spec->start_address == VARTAFlexBatteryAddress::ActivePowerSF) {
             varta_flex.battery_active_power_sf = static_cast<int16_t>(c16.u);
         }
@@ -1779,14 +1782,20 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VARTAFlexBatteryAddress::TotalChargeEnergySF) {
             varta_flex.battery_total_charge_energy_sf = static_cast<int16_t>(c16.u);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledActivePower_Virtual) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::InstalledCapacitySF) {
+            varta_flex.battery_installed_capacity_sf = static_cast<int16_t>(c16.u);
+        }
+        else if (spec->start_address == VARTAFlexBatteryAddress::ActivePowerScaled_Virtual) {
             value = varta_flex.battery_active_power * get_sun_spec_scale_factor(varta_flex.battery_active_power_sf);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledApparentPower_Virtual) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::ApparentPowerScaled_Virtual) {
             value = varta_flex.battery_apparent_power * get_sun_spec_scale_factor(varta_flex.battery_apparent_power_sf);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledTotalChargeEnergy_Virtual) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::TotalChargeEnergyScaled_Virtual) {
             value = varta_flex.battery_total_charge_energy * get_sun_spec_scale_factor(varta_flex.battery_total_charge_energy_sf);
+        }
+        else if (spec->start_address == VARTAFlexBatteryAddress::InstalledCapacityScaled_Virtual) {
+            value = varta_flex.battery_installed_capacity * get_sun_spec_scale_factor(varta_flex.battery_installed_capacity_sf);
         }
     }
     else if (is_solis_hybrid_inverter_battery_meter()) {

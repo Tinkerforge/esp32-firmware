@@ -297,9 +297,11 @@ private:
             float battery_active_power;
             float battery_apparent_power;
             float battery_total_charge_energy;
+            float battery_installed_capacity;
             int16_t battery_active_power_sf;
             int16_t battery_apparent_power_sf;
             int16_t battery_total_charge_energy_sf;
+            int16_t battery_installed_capacity_sf;
         } varta_flex;
 
         // Solis hybrid inverter

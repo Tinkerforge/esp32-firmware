@@ -64,11 +64,18 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Charge Energy [Wh]',
+                'name': 'Total Charge Energy [0.001 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 1069,
                 'value_type': 'U32LE',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Installed Capacity [0.01 kWh]',
+                'value_id': 'Capacity',
+                'start_address': 1071,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
             },
         ],
     },
@@ -119,7 +126,7 @@ specs = [
                 'value_type': 'S16',
             },
             {
-                'name': 'Scaled Grid Power [W]',
+                'name': 'Grid Power Scaled [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -134,13 +141,13 @@ specs = [
         'register_type': 'HoldingRegister',
         'values': [
             {
-                'name': 'Active Power',
+                'name': 'Active Power [W]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 1066,
                 'value_type': 'S16',
             },
             {
-                'name': 'Apparent Power',
+                'name': 'Apparent Power [VA]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 1067,
                 'value_type': 'S16',
@@ -152,11 +159,18 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Charge Energy',
+                'name': 'Total Charge Energy [0.001 kWh]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 1069,
                 'value_type': 'U32LE',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Installed Capacity [0.01 kWh]',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 1071,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Active Power SF',
@@ -171,7 +185,7 @@ specs = [
                 'value_type': 'S16',
             },
             {
-                'name': 'Undocumented',  # this value is undocumented, but testing showed that it can be read without error
+                'name': 'Undocumented 1',  # this value is undocumented, but testing showed that it can be read without error, if it is read in between documented values
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 2068,
                 'value_type': 'U16',
@@ -183,18 +197,35 @@ specs = [
                 'value_type': 'S16',
             },
             {
-                'name': 'Scaled Active Power [W]',
+                'name': 'Undocumented 2',  # this value is undocumented, but testing showed that it can be read without error, if it is read in between documented values
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2070,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Installed Capacity SF',
+                'value_id': 'VALUE_ID_META',
+                'start_address': 2071,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'Active Power Scaled [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Scaled Apparent Power [W]',
+                'name': 'Apparent Power Scaled [W]',
                 'value_id': 'PowerApparentLSumImExDiff',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Scaled Total Charge Energy [kWh]',
+                'name': 'Total Charge Energy Scaled [kWh]',
                 'value_id': 'EnergyActiveLSumImport',
+                'start_address': 'START_ADDRESS_VIRTUAL',
+            },
+            {
+                'name': 'Installed Capacity Scaled [kWh]',
+                'value_id': 'Capacity',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
         ],
