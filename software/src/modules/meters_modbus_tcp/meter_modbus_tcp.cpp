@@ -1387,7 +1387,12 @@ bool MeterModbusTCP::parse()
             }
 
             float dc_power_scale_factor = get_sun_spec_scale_factor(solaredge_hybrid_inverter.dc_power_sf);
-            float dc_power = solaredge_hybrid_inverter.dc_power * dc_power_scale_factor * -1.0f;
+            float dc_power = solaredge_hybrid_inverter.dc_power * dc_power_scale_factor;
+
+            if (!is_exactly_zero(dc_power)) {
+                // Don't convert 0.0f into -0.0f
+                dc_power *= -1.0f;
+            }
 
             // inverter import (+), battery charge (+):    P_PV = P_bat - P_inv
             // inverter import (+), battery discharge (-): P_PV = 0 [should be impossible]
