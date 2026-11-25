@@ -211,37 +211,37 @@ specs = [
             },
             {
                 'name': 'Import Wh since last reset [kWh]',
-                'value_id': 'EnergyActiveLSumImport', # FIXME: should be mapped resettable
+                'value_id': 'EnergyActiveLSumImport',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(30),
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Export Wh since last reset [kWh]',
-                'value_id': 'EnergyActiveLSumExport', # FIXME: should be mapped resettable
+                'value_id': 'EnergyActiveLSumExport',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(31),
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Import VArh since last reset [kvarh]',
-                'value_id': 'EnergyReactiveLSumInductive', # FIXME: should be mapped resettable
+                'value_id': 'EnergyReactiveLSumInductive',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(32),
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Export VArh since last reset [kvarh]',
-                'value_id': 'EnergyReactiveLSumCapacitive', # FIXME: should be mapped resettable
+                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(33),
                 'value_type': 'F32BE',
             },
             {
                 'name': 'VAh since last reset [kVAh]',
-                'value_id': 'EnergyApparentLSumImExSum', # FIXME: should be mapped resettable
+                'value_id': 'EnergyApparentLSumImExSum',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(34),
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Ah since last reset [Ah]',
-                'value_id': 'ElectricCharge', # FIXME: should be mapped resettable
+                'value_id': 'ElectricCharge',  # FIXME: should be mapped resettable
                 'start_address': index_to_address(35),
                 'value_type': 'F32BE',
             },

@@ -746,7 +746,7 @@ specs = [
                 'value_type': 'S32BE',
             },
             {
-                'name': 'Energy storage unit 1 - bus voltage [ 0.1 V]',
+                'name': 'Energy storage unit 1 - bus voltage [0.1 V]',
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 37003,
                 'value_type': 'U16',

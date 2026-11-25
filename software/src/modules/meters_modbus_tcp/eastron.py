@@ -279,37 +279,37 @@ specs = [
             },
             {
                 'name': 'Import Wh since last reset [kWh]',
-                'value_id': 'EnergyActiveLSumImport', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'EnergyActiveLSumImport',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 73,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Export Wh since last reset [kWh]',
-                'value_id': 'EnergyActiveLSumExport', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'EnergyActiveLSumExport',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 75,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Import VArh since last reset [kvarh]',
-                'value_id': 'EnergyReactiveLSumInductive', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'EnergyReactiveLSumInductive',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 77,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Export VArh since last reset [kvarh]',
-                'value_id': 'EnergyReactiveLSumCapacitive', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'EnergyReactiveLSumCapacitive',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 79,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'VAh since last reset [kVAh]',
-                'value_id': 'EnergyApparentLSumImExSum', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'EnergyApparentLSumImExSum',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 81,
                 'value_type': 'F32BE',
             },
             {
                 'name': 'Ah since last reset [Ah]',
-                'value_id': 'ElectricCharge', # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
+                'value_id': 'ElectricCharge',  # FIXME: should be mapped resettable, but it's only resettable with an actual SDM630-TCP, not with a normal SDM630 behind an RS485/TCP converter
                 'start_number': 83,
                 'value_type': 'F32BE',
             },

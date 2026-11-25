@@ -581,7 +581,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Charge Energy  [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
+                'name': 'Total Charge Energy [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -589,7 +589,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Charge Energy  [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
+                'name': 'Total Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -597,7 +597,7 @@ specs = [
                 'variants': ['Pro'],
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
+                'name': 'Total Discharge Energy [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
@@ -605,7 +605,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
+                'name': 'Total Discharge Energy [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
@@ -677,7 +677,7 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Total Charge Energy  [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'name': 'Total Charge Energy [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -685,7 +685,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Charge Energy  [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'name': 'Total Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -693,7 +693,7 @@ specs = [
                 'variants': ['Pro'],
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
+                'name': 'Total Discharge Energy [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
@@ -701,7 +701,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Discharge Energy  [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
+                'name': 'Total Discharge Energy [0.1 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
@@ -807,7 +807,7 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
-                'name': 'Total Charge Energy  [0.01 kWh]',
+                'name': 'Total Charge Energy [0.01 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -815,7 +815,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Charge Energy  [0.1 kWh]',
+                'name': 'Total Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
                 'value_type': 'U32BE',
@@ -823,7 +823,7 @@ specs = [
                 'variants': ['Pro'],
             },
             {
-                'name': 'Total Discharge Energy  [0.01 kWh]',
+                'name': 'Total Discharge Energy [0.01 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
@@ -831,7 +831,7 @@ specs = [
                 'variants': ['Smart'],
             },
             {
-                'name': 'Total Discharge Energy  [0.1 kWh]',
+                'name': 'Total Discharge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
                 'value_type': 'U32BE',
