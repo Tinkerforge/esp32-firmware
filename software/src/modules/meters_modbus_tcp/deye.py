@@ -43,13 +43,6 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Total PV Power [0.1 kWh]',
-                'value_id': 'EnergyDCExport',
-                'start_address': 534,
-                'value_type': 'U32LE',
-                'scale_factor': 0.1,
-            },
-            {
                 'name': 'Transformer Temperature [0.1 °C]',
                 'value_id': 'TemperatureTransformer',
                 'start_address': 540,
