@@ -213,6 +213,14 @@ calculations = {}
 
 start_address_virtual_next = START_ADDRESS_VIRTUAL_BASE
 
+
+def repeat(c, count):
+    if count <= 80:
+        return c * count
+
+    return (c * 80) + '...'
+
+
 for spec in specs:
     clone = spec.get('clone')
 
@@ -357,12 +365,12 @@ for spec in specs:
                             if adjacent_register_count % max_register_count != 0:
                                 adjacent_register_count_blocks.append(str(adjacent_register_count % max_register_count))
 
-                            adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
+                            adjacent_register_count_blocks = f'\n    // {" " * 77} // ^^^^ {" + ".join(adjacent_register_count_blocks)}'
 
-                        value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} adjacent register{"s" if adjacent_register_count > 1 else ""}{adjacent_register_count_blocks}'
+                        value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} {"adjacent register" + ("s" if adjacent_register_count > 1 else ""):<18} // {repeat("+", adjacent_register_count)}{adjacent_register_count_blocks}'
                         adjacent_register_count = 0
 
-                        value_addresses.append(f'    // {"=" * 77} // {start_address_gap:>4} register{"s" if start_address_gap > 1 else ""} gap')
+                        value_addresses.append(f'    // {"=" * 77} // {start_address_gap:>4} {"register" + ("s gap" if start_address_gap > 1 else " gap"):<18} // {repeat("-", start_address_gap)}')
 
                 register_count = int(''.join([c for c in value.get('value_type', 'None') if c >= '0' and c <= '9'])) // 16
                 adjacent_register_count += register_count
@@ -428,9 +436,9 @@ for spec in specs:
                 if adjacent_register_count % max_register_count != 0:
                     adjacent_register_count_blocks.append(str(adjacent_register_count % max_register_count))
 
-                adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
+                adjacent_register_count_blocks = f'\n    // {" " * 77} // ^^^^ {" + ".join(adjacent_register_count_blocks)}'
 
-            value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} adjacent register{"s" if adjacent_register_count > 1 else ""}{adjacent_register_count_blocks}'
+            value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} {"adjacent register" + ("s" if adjacent_register_count > 1 else ""):<18} // {repeat("+", adjacent_register_count)}{adjacent_register_count_blocks}'
 
         specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
                        f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'
