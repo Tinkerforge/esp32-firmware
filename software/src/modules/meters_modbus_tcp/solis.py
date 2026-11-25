@@ -302,6 +302,27 @@ specs = [
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
+                'name': 'LLC bus voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 33136,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Backup AC voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 33137,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Backup AC current [0.1 A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 33138,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Battery capacity SOC [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 33139,

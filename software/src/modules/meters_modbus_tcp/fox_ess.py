@@ -480,6 +480,22 @@ specs = [
                 'variants': ['Pro'],
             },
             {
+                'name': 'Smart Meter Export Today [0.01 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39615,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Smart Meter Export Today [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39615,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
                 'name': 'Smart Meter Import Total [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 39617,
@@ -597,6 +613,22 @@ specs = [
                 'variants': ['Pro'],
             },
             {
+                'name': 'Today Charge Energy [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Today Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
                 'name': 'Total Discharge Energy [0.01 kWh]',  # this is the combined discharge energy of both batteries, only show if battery 2 is offline
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 39609,
@@ -688,6 +720,22 @@ specs = [
                 'name': 'Total Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'Today Charge Energy [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Today Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
                 'variants': ['Pro'],
@@ -818,6 +866,22 @@ specs = [
                 'name': 'Total Charge Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 39605,
+                'value_type': 'U32BE',
+                'scale_factor': 0.1,
+                'variants': ['Pro'],
+            },
+            {
+                'name': 'Today Charge Energy [0.01 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
+                'value_type': 'U32BE',
+                'scale_factor': 0.01,
+                'variants': ['Smart'],
+            },
+            {
+                'name': 'Today Charge Energy [0.1 kWh]',  # this is the combined charge energy of both batteries, only show if battery 1 is offline
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39607,
                 'value_type': 'U32BE',
                 'scale_factor': 0.1,
                 'variants': ['Pro'],

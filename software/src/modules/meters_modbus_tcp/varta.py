@@ -88,6 +88,24 @@ specs = [
                 'scale_factor': -1.0,
             },
             {
+                'name': 'Undocumented 1',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1079,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Undocumented 2',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1080,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Undocumented 3',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 1081,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Grid Frequency [0.1 Hz]',
                 'value_id': 'FrequencyLAvg',
                 'start_address': 1082,
@@ -152,12 +170,12 @@ specs = [
                 'start_address': 2067,
                 'value_type': 'S16',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 2068,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 2068,
+                'value_type': 'U16',
+            },
             {
                 'name': 'Total Charge Energy SF',
                 'value_id': 'VALUE_ID_META',

@@ -255,19 +255,19 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'Undocumented 1',  # this register is undocumented, but testing showed that it can be read without error
+                'name': 'Undocumented 1',  # this value is undocumented, but testing showed that it can be read without error
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 0x0826,
                 'value_type': 'U16',
             },
             {
-                'name': 'Undocumented 2',  # this register is undocumented, but testing showed that it can be read without error
+                'name': 'Undocumented 2',  # this value is undocumented, but testing showed that it can be read without error
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 0x0827,
                 'value_type': 'U16',
             },
             {
-                'name': 'Undocumented 3',  # this register is undocumented, but testing showed that it can be read without error
+                'name': 'Undocumented 3',  # this value is undocumented, but testing showed that it can be read without error
                 'value_id': 'VALUE_ID_GAP_FILLER',
                 'start_address': 0x0828,
                 'value_type': 'U16',
@@ -332,6 +332,34 @@ specs = [
                 'name': 'Battery side IGBT temperature  [0.1 °C]',
                 'value_id': 'TemperatureHeatSink',
                 'start_address': 0x0869,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Control board temperature [0.1 °C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x086A,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Bus voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x086B,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Positive half-bus voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x086C,
+                'value_type': 'S16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Negative half-bus voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x086D,
                 'value_type': 'S16',
                 'scale_factor': 0.1,
             },

@@ -157,18 +157,12 @@ specs = [
                 'start_number': 43,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 45,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 46,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 1',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 45,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Average line current [A]',
                 'value_id': 'CurrentLAvgImExSum',
@@ -181,54 +175,36 @@ specs = [
                 'start_number': 49,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 51,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 52,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 2',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 51,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Total system power [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_number': 53,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 55,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 56,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 3',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 55,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Total system volt amps [VA]',
                 'value_id': 'PowerApparentLSumImExSum',
                 'start_number': 57,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 59,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 60,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 4',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 59,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Total system volt amps reactive [var]',
                 'value_id': 'PowerReactiveLSumIndCapDiff',
@@ -241,36 +217,24 @@ specs = [
                 'start_number': 63,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 65,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 66,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 5',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 65,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Total system phase angle [°]',
                 'value_id': 'PhaseAngleLSum',
                 'start_number': 67,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 69,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 70,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 6',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 69,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Frequency of supply voltages [Hz]',
                 'value_id': 'FrequencyLAvg',
@@ -379,18 +343,12 @@ specs = [
                 'start_number': 245,
                 'value_type': 'F32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 247,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_number': 248,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 7',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 247,
+                'value_type': 'F32BE',
+            },
             {
                 'name': 'Average line to neutral volts THD [%]',
                 'value_id': 'VoltageTHDLNAvg',

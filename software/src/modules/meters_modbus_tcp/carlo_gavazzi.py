@@ -217,6 +217,20 @@ em100_and_et100_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
+        'name': 'W Demand [0.1 W]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x0A,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'W Demand Peak [0.1 W]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x0C,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
         'name': 'PF [0.001]',
         'value_id': 'PowerFactorL1',
         'start_address': 0x0E,
@@ -738,6 +752,20 @@ em510_single_phase_values = [
         'scale_factor': 0.1,
     },
     {
+        'name': 'W Demand [0.1 W]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x0A,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'W Demand Peak [0.1 W]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x0C,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
         'name': 'PF [0.001]',
         'value_id': 'PowerFactorL1Directional',
         'start_address': 0x0E,
@@ -792,6 +820,20 @@ em510_single_phase_values = [
         'name': 'kvarh Negative Total [0.1 kvarh]',
         'value_id': 'EnergyReactiveL1Capacitive',  # FIXME: direction?
         'start_address': 0x22,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'kWh Negative Partial [0.1 kWh]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x24,
+        'value_type': 'S32LE',
+        'scale_factor': 0.1,
+    },
+    {
+        'name': 'kvarh Negative Partial [0.1 kvarh]',
+        'value_id': 'VALUE_ID_GAP_FILLER',
+        'start_address': 0x26,
         'value_type': 'S32LE',
         'scale_factor': 0.1,
     },
@@ -998,6 +1040,20 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'W Demand Sum [0.1 W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x2E,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'VA Demand Sum [0.1 VA]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x30,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'PF L1 [0.001]',
                 'value_id': 'PowerFactorL1',
                 'start_address': 0x32,
@@ -1053,6 +1109,20 @@ specs = [
                 'name': 'kvarh Positive Total [0.1 kvarh]',
                 'value_id': 'EnergyReactiveLSumInductive',  # FIXME: direction?
                 'start_address': 0x40,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kWh Positive Partial [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x42,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kvarh Positive Partial [0.1 kvarh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x44,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
             },
@@ -2496,6 +2566,20 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'kWh Negative Partial [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x52,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'kvarh Negative Partial [0.1 kvarh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x54,
+                'value_type': 'S32LE',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'kVAh Total [0.1 kVAh]',
                 'value_id': 'EnergyApparentLSumImExSum',  # FIXME: sum?
                 'start_address': 0x56,
@@ -2820,6 +2904,18 @@ specs = [
                 'start_address': 0x50,
                 'value_type': 'S32LE',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Undocumented 1',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 0x52,
+                'value_type': 'S32LE',
+            },
+            {
+                'name': 'Undocumented 2',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 0x54,
+                'value_type': 'S32LE',
             },
             {
                 'name': 'kVAh Total [0.1 kVAh]',

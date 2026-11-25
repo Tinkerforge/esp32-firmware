@@ -178,6 +178,18 @@ specs = [
                 'value_type': 'S32BE',
             },
             {
+                'name': 'Undocumented 1',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 58,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Undocumented 2',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 60,
+                'value_type': 'S32BE',
+            },
+            {
                 'name': 'Gesamter Power Faktor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',
                 'start_address': 62,
@@ -190,6 +202,18 @@ specs = [
                 'start_address': 64,
                 'value_type': 'S32BE',
                 'scale_factor': 0.001,
+            },
+            {
+                'name': 'Undocumented 3',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 66,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Undocumented 4',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 68,
+                'value_type': 'S32BE',
             },
             {
                 'name': 'Frequenz [0.01 Hz]',

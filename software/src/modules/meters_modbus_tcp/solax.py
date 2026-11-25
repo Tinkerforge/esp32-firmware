@@ -224,6 +224,24 @@ specs = [
                 'value_type': 'S16',
             },
             {
+                'name': 'BDC Status',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0019,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Grid Status',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x001A,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'MPPT Count',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x001B,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Battery State Of Charge [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 0x001C,
@@ -236,19 +254,19 @@ specs = [
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
             },
-            #{
-            #    'name': 'Reserved',  # FIXME: this register is marked as reserved in the documentation, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 0x1F,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Output Energy Today [0.1 kWh]',
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 0x20,
-            #    'value_type': 'U16',
-            #    'scale_factor': 0.1,
-            #},
+            {
+                'name': 'Reserved',  # FIXME: this register is marked as reserved in the documentation, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 0x001F,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Output Energy Today [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',  # FIXME: due to register 0x001F being unconfirmed it is useless to read this register
+                'start_address': 0x0020,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
             {
                 'name': 'Input Energy [0.1 kWh]',
                 'value_id': 'EnergyDCCharge',
@@ -293,6 +311,25 @@ specs = [
                 'start_address': 0x0006,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Grid Frequency [0.01 Hz]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0007,
+                'value_type': 'U16',
+                'scale_factor': 0.01,
+            },
+            {
+                'name': 'Radiator Temperature [°C]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0008,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'Run Mode',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x0009,
+                'value_type': 'U16',
             },
             {
                 'name': 'PV1 Power [W]',
@@ -553,6 +590,19 @@ specs = [
                 'start_address': 0x423,
                 'value_type': 'U32LE',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Daily PV Energy [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x425,
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Inverter Fault Message',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 0x427,
+                'value_type': 'U32LE',
             },
             {
                 'name': 'PV3 Voltage [0.1 V]',

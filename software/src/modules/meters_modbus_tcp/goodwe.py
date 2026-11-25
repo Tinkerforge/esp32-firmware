@@ -66,6 +66,19 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Total Hour [h]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35197,
+                'value_type': 'U32BE',
+            },
+            {
+                'name': 'Daily Feed Energy to Grid [0.1 kWh]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35199,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
                 'name': 'Total Draw Energy from Grid [0.1 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 35200,
@@ -180,6 +193,19 @@ specs = [
                 'name': 'T Phase Grid Power [W]',  # FIXME: this value matches voltage times current, but seems to be too big compared to the total
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 35134,
+                'value_type': 'S32BE',
+                'scale_factor': -1.0,
+            },
+            {
+                'name': 'Grid Mode',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35136,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Total Inverter Power [W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35137,
                 'value_type': 'S32BE',
                 'scale_factor': -1.0,
             },
@@ -373,6 +399,24 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Max BMS 1 Charge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37004,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Max BMS 1 Discharge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37005,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'BMS 1 Error Code Low',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37006,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Battery 1 Capacity [%]',
                 'value_id': 'StateOfCharge',
                 'start_address': 37007,
@@ -441,6 +485,24 @@ specs = [
                 'start_address': 39001,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Max BMS 2 Charge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39002,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Max BMS 2 Discharge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39003,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'BMS 2 Error Code Low',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39004,
+                'value_type': 'U16',
             },
             {
                 'name': 'Battery 2 Capacity [%]',
@@ -528,6 +590,24 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
+                'name': 'Max BMS Charge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37004,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Max BMS Discharge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37005,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'BMS 1 Error Code Low',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37006,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Battery 1 Capacity [%]',
                 'value_id': 'VALUE_ID_META',
                 'start_address': 37007,
@@ -539,6 +619,24 @@ specs = [
                 'start_address': 39001,
                 'value_type': 'U16',
                 'scale_factor': 0.1,
+            },
+            {
+                'name': 'Max BMS 2 Charge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39002,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Max BMS 2 Discharge Current [A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39003,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'BMS 2 Error Code Low',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 39004,
+                'value_type': 'U16',
             },
             {
                 'name': 'Battery 2 Capacity [%]',
@@ -597,6 +695,12 @@ specs = [
                 'name': 'T Phase Load Power [W]',
                 'value_id': 'PowerActiveL3ImExDiff',
                 'start_address': 35167,
+                'value_type': 'S32BE',
+            },
+            {
+                'name': 'Total Load Power of Backup [W]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 35169,
                 'value_type': 'S32BE',
             },
             {

@@ -359,19 +359,24 @@ for spec in specs:
 
                             adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
 
-                        value_addresses[-1] += f' // {adjacent_register_count}{adjacent_register_count_blocks} adjacent register{"s" if adjacent_register_count > 1 else ""}'
+                        value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} adjacent register{"s" if adjacent_register_count > 1 else ""}{adjacent_register_count_blocks}'
                         adjacent_register_count = 0
 
-                        value_addresses.append(f'    // {start_address_gap} register{"s" if start_address_gap > 1 else ""} gap')
-
-                if value['value_id'] == 'VALUE_ID_GAP_FILLER':
-                    address_name += '_GapFiller'
+                        value_addresses.append(f'    // {"=" * 77} // {start_address_gap:>4} register{"s" if start_address_gap > 1 else ""} gap')
 
                 register_count = int(''.join([c for c in value.get('value_type', 'None') if c >= '0' and c <= '9'])) // 16
                 adjacent_register_count += register_count
 
                 last_start_address = start_address
                 last_register_count = register_count
+
+            if value['value_id'].startswith('VALUE_ID_GAP_FILLER'):
+                value_addresses.append(f'    // [{address_name.replace(" ", "")}]')
+
+                if value['value_id'] == 'VALUE_ID_GAP_FILLER_UNCONFIRMED':
+                    value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} //      unconfirmed'
+
+                continue
 
             value['_address_name'] = address_name
 
@@ -425,7 +430,7 @@ for spec in specs:
 
                 adjacent_register_count_blocks = f' ({" + ".join(adjacent_register_count_blocks)})'
 
-            value_addresses[-1] += f' // {adjacent_register_count}{adjacent_register_count_blocks} adjacent register{"s" if adjacent_register_count > 1 else ""}'
+            value_addresses[-1] += f'{" " * (84 - len(value_addresses[-1]))} // {adjacent_register_count:>4} adjacent register{"s" if adjacent_register_count > 1 else ""}{adjacent_register_count_blocks}'
 
         specs_h.append(f'namespace {spec_name.camel}Address {{\n\n'
                        f'enum {{\n{"\n".join(value_addresses)}\n}};\n\n'

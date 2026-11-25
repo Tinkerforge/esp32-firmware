@@ -357,18 +357,18 @@ specs = [
                 'value_type': 'U16',
                 'scale_factor': 0.1,
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 37761,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Energy storage - running status',
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 37762,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37761,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Energy storage - running status',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37762,
+                'value_type': 'U16',
+            },
             {
                 'name': 'Energy storage - bus voltage [0.1 V]',
                 'value_id': 'VoltageDC',
@@ -652,7 +652,7 @@ specs = [
         'virtual_meter': 'Grid',
         'fixed_location': 'Grid',
         'register_type': 'HoldingRegister',
-        'values': [
+        'values': [  # only read minimum register set, because the Smart Dongle seems to have limited throughput
             {
                 'name': 'Grid current A phase [0.01 A]',
                 'value_id': 'CurrentL1ImExDiff',
@@ -716,12 +716,38 @@ specs = [
         'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
-        'values': [
+        'values': [  # only read minimum register set, because the Smart Dongle seems to have limited throughput
             {
                 'name': 'Energy storage - SOC [0.1 %]',
                 'value_id': 'StateOfCharge',
                 'start_address': 37760,
                 'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Undocumented',  # this value is undocumented, but testing showed that it can be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37761,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Energy storage - running status',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37762,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Energy storage - bus voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37763,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'Energy storage - bus current [0.1 A]',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 37764,
+                'value_type': 'S16',
                 'scale_factor': 0.1,
             },
             {
@@ -738,7 +764,7 @@ specs = [
         'selection': 'secondary',
         'fixed_location': 'Battery',
         'register_type': 'HoldingRegister',
-        'values': [
+        'values': [  # only read minimum register set, because the Smart Dongle seems to have limited throughput
             {
                 'name': 'Energy storage unit 1 - charge discharge power [W]',
                 'value_id': 'PowerDCChaDisDiff',
@@ -768,7 +794,7 @@ specs = [
         'virtual_meter': 'PV',
         'fixed_location': 'PV',
         'register_type': 'HoldingRegister',
-        'values': [
+        'values': [  # only read minimum register set, because the Smart Dongle seems to have limited throughput
             {
                 'name': 'Input power [W]',
                 'value_id': 'PowerPVSumExport',
@@ -885,18 +911,12 @@ specs = [
                 'start_address': 31657,
                 'value_type': 'S32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 31659,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 31660,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 1',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31659,
+                'value_type': 'S32BE',
+            },
             {
                 'name': 'Power factor of built-in electric energy sensor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',
@@ -937,11 +957,23 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Undocumented 2',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31675,
+                'value_type': 'S64BE',
+            },
+            {
                 'name': 'Total negative active energy of built-in electric energy sensor [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 31679,
                 'value_type': 'S64BE',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Undocumented 3',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31683,
+                'value_type': 'S64BE',
             },
             {
                 'name': 'Total positive active energy of built-in electric energy sensor [0.01 kWh]',
@@ -1029,18 +1061,12 @@ specs = [
                 'start_address': 31913,
                 'value_type': 'S32BE',
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 31915,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 31916,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented 1',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31915,
+                'value_type': 'S32BE',
+            },
             {
                 'name': 'Power factor of external electric energy sensor [0.001]',
                 'value_id': 'PowerFactorLSumDirectional',
@@ -1081,11 +1107,23 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Undocumented 2',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31931,
+                'value_type': 'S64BE',
+            },
+            {
                 'name': 'Total negative active energy of external electric energy sensor [0.01 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 31935,
                 'value_type': 'S64BE',
                 'scale_factor': 0.01,
+            },
+            {
+                'name': 'Undocumented 3',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 31939,
+                'value_type': 'S64BE',
             },
             {
                 'name': 'Total positive active energy of external electric energy sensor [0.01 kWh]',
@@ -1178,18 +1216,12 @@ specs = [
                 'value_type': 'U64BE',
                 'scale_factor': 0.01,
             },
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 30352,
-            #    'value_type': 'U16',
-            #},
-            #{
-            #    'name': 'Undefined',  # FIXME: this register is not documented, no testing has been done yet, if it could be read without error
-            #    'value_id': 'VALUE_ID_GAP_FILLER',
-            #    'start_address': 30353,
-            #    'value_type': 'U16',
-            #},
+            {
+                'name': 'Undocumented',  # FIXME: this value is undocumented, no testing has been done yet, if it could be read without error
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_address': 30352,
+                'value_type': 'U32BE',
+            },
             {
                 'name': 'PV output power [W]',
                 'value_id': 'PowerPVSumExport',

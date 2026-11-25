@@ -210,6 +210,30 @@ specs = [
                 'scale_factor': 0.01,
             },
             {
+                'name': 'Strom Skalierfaktor',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 76,
+                'value_type': 'S16',
+            },
+            {
+                'name': 'Not Available 1',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 77,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Not Available 2',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 78,
+                'value_type': 'U16',
+            },
+            {
+                'name': 'Not Available 3',
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_address': 79,
+                'value_type': 'U16',
+            },
+            {
                 'name': 'Spannung L1 [0.1 V]',
                 'value_id': 'VoltageL1N',
                 'start_address': 80,

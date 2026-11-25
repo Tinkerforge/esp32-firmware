@@ -397,6 +397,21 @@ specs = [
                 'variants': ['String'],
             },
             {
+                'name': 'Load Power [W]',  # FIXME: not available for all device types
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_number': 5091,
+                'value_type': 'S32LE',
+                'variants': ['String'],
+            },
+            {
+                'name': 'Daily Export Energy [0.1 kWh]',  # FIXME: not available for all device types
+                'value_id': 'VALUE_ID_GAP_FILLER',
+                'start_number': 5093,
+                'value_type': 'U32LE',
+                'scale_factor': 0.1,
+                'variants': ['String'],
+            },
+            {
                 'name': 'Total Export Energy [0.1 kWh]',  # FIXME: not available for all device types
                 'value_id': 'EnergyActiveLSumExport',
                 'start_number': 5095,
@@ -616,6 +631,20 @@ specs = [
             #        individually to be able to detect the error condition. another way of
             #        handling this would be to read the device type register 5000 and keep a
             #        database of how many MPPT certain device types support
+            {
+                'name': 'MPPT3 Voltage [0.1 V]',
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 5015,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
+            {
+                'name': 'MPPT3 Current [0.1 A]',
+                'value_id': 'VALUE_ID_GAP_FILLER_UNCONFIRMED',
+                'start_number': 5016,
+                'value_type': 'U16',
+                'scale_factor': 0.1,
+            },
             {
                 'name': 'Average MPPT Voltage [V]',
                 'value_id': 'VoltagePVAvg',
