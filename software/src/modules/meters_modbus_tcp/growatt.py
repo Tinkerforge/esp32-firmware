@@ -142,7 +142,7 @@ specs = [
                 'scale_factor': 0.1,
             },
             {
-                'name': 'IPF [0..20000]',
+                'name': 'IPF [0.0001]',
                 'value_id': 'PowerFactorLSumDirectional',
                 'start_address': 3100,
                 'value_type': 'U16',

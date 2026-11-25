@@ -277,7 +277,7 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Total active energy demand [Wh]',
+                'name': 'Total active energy demand [0.001 kWh]',
                 'value_id': 'EnergyActiveLSumImport',
                 'start_address': 33024,
                 'value_type': 'F32LE',
@@ -285,7 +285,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy demand [varh]',
+                'name': 'Total reactive energy demand [0.001 kvarh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # FIXME: value ID missing: EnergyReactiveLSumImport
                 'start_address': 33026,
                 'value_type': 'F32LE',
@@ -293,7 +293,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total apparent energy [VAh]',
+                'name': 'Total apparent energy [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumImExSum',
                 'start_address': 33028,
                 'value_type': 'F32LE',
@@ -301,7 +301,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total active energy delivery [Wh]',
+                'name': 'Total active energy delivery [0.001 kWh]',
                 'value_id': 'EnergyActiveLSumExport',
                 'start_address': 33030,
                 'value_type': 'F32LE',
@@ -309,7 +309,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy delivery [varh]',
+                'name': 'Total reactive energy delivery [0.001 kvarh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # FIXME: value ID missing: EnergyReactiveLSumExport
                 'start_address': 33032,
                 'value_type': 'F32LE',
@@ -317,7 +317,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy [varh]',
+                'name': 'Total reactive energy [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumIndCapSum',
                 'start_address': 33034,
                 'value_type': 'F32LE',
@@ -325,7 +325,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy demand [Wh]',
+                'name': 'Resettable active energy demand [0.001 kWh]',
                 'value_id': 'EnergyActiveLSumImportResettable',
                 'start_address': 33036,
                 'value_type': 'F32LE',
@@ -333,7 +333,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy demand [varh]',
+                'name': 'Resettable reactive energy demand [0.001 kvarh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # FIXME: value ID missing: EnergyReactiveLSumImportResettable
                 'start_address': 33038,
                 'value_type': 'F32LE',
@@ -341,7 +341,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy [VAh]',
+                'name': 'Resettable apparent energy [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumImExSumResettable',
                 'start_address': 33040,
                 'value_type': 'F32LE',
@@ -349,7 +349,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy delivery [Wh]',
+                'name': 'Resettable active energy delivery [0.001 kWh]',
                 'value_id': 'EnergyActiveLSumExportResettable',
                 'start_address': 33042,
                 'value_type': 'F32LE',
@@ -357,7 +357,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivery [varh]',
+                'name': 'Resettable reactive energy delivery [0.001 kvarh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # FIXME: value ID missing: EnergyReactiveLSumExportResettable
                 'start_address': 33044,
                 'value_type': 'F32LE',
@@ -365,7 +365,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy [varh]',
+                'name': 'Resettable reactive energy [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumIndCapSumResettable',
                 'start_address': 33046,
                 'value_type': 'F32LE',
@@ -539,7 +539,7 @@ specs = [
             #    'scale_factor': 0.1,
             #},
             {
-                'name': 'Active energy consumed phase 1 [Wh]',
+                'name': 'Active energy consumed phase 1 [0.001 kWh]',
                 'value_id': 'EnergyActiveL1Import',
                 'start_address': 37632,
                 'value_type': 'F32LE',
@@ -547,7 +547,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Active energy consumed phase 2 [Wh]',
+                'name': 'Active energy consumed phase 2 [0.001 kWh]',
                 'value_id': 'EnergyActiveL2Import',
                 'start_address': 37634,
                 'value_type': 'F32LE',
@@ -555,7 +555,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Active energy consumed phase 3 [Wh]',
+                'name': 'Active energy consumed phase 3 [0.001 kWh]',
                 'value_id': 'EnergyActiveL3Import',
                 'start_address': 37636,
                 'value_type': 'F32LE',
@@ -563,7 +563,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total active energy consumed all phases [Wh]',
+                'name': 'Total active energy consumed all phases [0.001 kWh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # EnergyActiveLSumImport
                 'start_address': 37638,  # FIXME: is this the same value as register 33024 (Total active energy demand)?
                 'value_type': 'F32LE',
@@ -571,7 +571,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Active energy delivered phase 1 [Wh]',
+                'name': 'Active energy delivered phase 1 [0.001 kWh]',
                 'value_id': 'EnergyActiveL1Export',
                 'start_address': 37640,
                 'value_type': 'F32LE',
@@ -579,7 +579,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Active energy delivered phase 2 [Wh]',
+                'name': 'Active energy delivered phase 2 [0.001 kWh]',
                 'value_id': 'EnergyActiveL2Export',
                 'start_address': 37642,
                 'value_type': 'F32LE',
@@ -587,7 +587,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Active energy delivered phase 3 [Wh]',
+                'name': 'Active energy delivered phase 3 [0.001 kWh]',
                 'value_id': 'EnergyActiveL3Export',
                 'start_address': 37644,
                 'value_type': 'F32LE',
@@ -595,7 +595,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total active energy delivered all phases [Wh]',
+                'name': 'Total active energy delivered all phases [0.001 kWh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # EnergyActiveLSumExport
                 'start_address': 37646,  # FIXME: is this the same value as register 33030 (Total active energy delivery)?
                 'value_type': 'F32LE',
@@ -603,7 +603,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed inductive phase 1 [VAh]',
+                'name': 'Apparent energy consumed inductive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q1',
                 'start_address': 37648,
                 'value_type': 'F32LE',
@@ -611,7 +611,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed inductive phase 2 [VAh]',
+                'name': 'Apparent energy consumed inductive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q1',
                 'start_address': 37650,
                 'value_type': 'F32LE',
@@ -619,7 +619,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed inductive phase 3 [VAh]',
+                'name': 'Apparent energy consumed inductive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q1',
                 'start_address': 37652,
                 'value_type': 'F32LE',
@@ -627,7 +627,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total apparent energy consumed inductive all phases [VAh]',
+                'name': 'Total apparent energy consumed inductive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ1',
                 'start_address': 37654,
                 'value_type': 'F32LE',
@@ -635,7 +635,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered inductive phase 1 [VAh]',
+                'name': 'Apparent energy delivered inductive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q2',
                 'start_address': 37656,
                 'value_type': 'F32LE',
@@ -643,7 +643,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered inductive phase 2 [VAh]',
+                'name': 'Apparent energy delivered inductive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q2',
                 'start_address': 37658,
                 'value_type': 'F32LE',
@@ -651,7 +651,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered inductive phase 3 [VAh]',
+                'name': 'Apparent energy delivered inductive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q2',
                 'start_address': 37660,
                 'value_type': 'F32LE',
@@ -659,7 +659,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total apparent energy delivered inductive all phases [VAh]',
+                'name': 'Total apparent energy delivered inductive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ2',
                 'start_address': 37662,
                 'value_type': 'F32LE',
@@ -667,7 +667,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed capacitive phase 1 [VAh]',
+                'name': 'Apparent energy consumed capacitive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q4',
                 'start_address': 37664,
                 'value_type': 'F32LE',
@@ -675,7 +675,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed capacitive phase 2 [VAh]',
+                'name': 'Apparent energy consumed capacitive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q4',
                 'start_address': 37666,
                 'value_type': 'F32LE',
@@ -683,7 +683,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy consumed capacitive phase 3 [VAh]',
+                'name': 'Apparent energy consumed capacitive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q4',
                 'start_address': 37668,
                 'value_type': 'F32LE',
@@ -691,7 +691,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total apparent energy consumed capacitive all phases [VAh]',
+                'name': 'Total apparent energy consumed capacitive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ4',
                 'start_address': 37670,
                 'value_type': 'F32LE',
@@ -699,7 +699,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered capacitive phase 1 [VAh]',
+                'name': 'Apparent energy delivered capacitive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q3',
                 'start_address': 37672,
                 'value_type': 'F32LE',
@@ -707,7 +707,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered capacitive phase 2 [VAh]',
+                'name': 'Apparent energy delivered capacitive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q3',
                 'start_address': 37674,
                 'value_type': 'F32LE',
@@ -715,7 +715,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Apparent energy delivered capacitive phase 3 [VAh]',
+                'name': 'Apparent energy delivered capacitive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q3',
                 'start_address': 37676,
                 'value_type': 'F32LE',
@@ -723,7 +723,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total apparent energy delivered capacitive all phases [VAh]',
+                'name': 'Total apparent energy delivered capacitive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ3',
                 'start_address': 37678,
                 'value_type': 'F32LE',
@@ -731,7 +731,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed inductive phase 1 [varh]',
+                'name': 'Reactive energy consumed inductive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q1',
                 'start_address': 37680,
                 'value_type': 'F32LE',
@@ -739,7 +739,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed inductive phase 2 [varh]',
+                'name': 'Reactive energy consumed inductive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q1',
                 'start_address': 37682,
                 'value_type': 'F32LE',
@@ -747,7 +747,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed inductive phase 3 [varh]',
+                'name': 'Reactive energy consumed inductive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q1',
                 'start_address': 37684,
                 'value_type': 'F32LE',
@@ -755,7 +755,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy consumed inductive all phases [varh]',
+                'name': 'Total reactive energy consumed inductive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ1',
                 'start_address': 37686,
                 'value_type': 'F32LE',
@@ -763,7 +763,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered inductive phase 1 [varh]',
+                'name': 'Reactive energy delivered inductive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q2',
                 'start_address': 37688,
                 'value_type': 'F32LE',
@@ -771,7 +771,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered inductive phase 2 [varh]',
+                'name': 'Reactive energy delivered inductive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q2',
                 'start_address': 37690,
                 'value_type': 'F32LE',
@@ -779,7 +779,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered inductive phase 3 [varh]',
+                'name': 'Reactive energy delivered inductive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q2',
                 'start_address': 37692,
                 'value_type': 'F32LE',
@@ -787,7 +787,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy delivered inductive all phases [varh]',
+                'name': 'Total reactive energy delivered inductive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ2',
                 'start_address': 37694,
                 'value_type': 'F32LE',
@@ -795,7 +795,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed capacitive phase 1 [varh]',
+                'name': 'Reactive energy consumed capacitive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q4',
                 'start_address': 37696,
                 'value_type': 'F32LE',
@@ -803,7 +803,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed capacitive phase 2 [varh]',
+                'name': 'Reactive energy consumed capacitive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q4',
                 'start_address': 37698,
                 'value_type': 'F32LE',
@@ -811,7 +811,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy consumed capacitive phase 3 [varh]',
+                'name': 'Reactive energy consumed capacitive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q4',
                 'start_address': 37700,
                 'value_type': 'F32LE',
@@ -819,7 +819,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy consumed capacitive all phases [varh]',
+                'name': 'Total reactive energy consumed capacitive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ4',
                 'start_address': 37702,
                 'value_type': 'F32LE',
@@ -827,7 +827,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered capacitive phase 1 [varh]',
+                'name': 'Reactive energy delivered capacitive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q3',
                 'start_address': 37704,
                 'value_type': 'F32LE',
@@ -835,7 +835,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered capacitive phase 2 [varh]',
+                'name': 'Reactive energy delivered capacitive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q3',
                 'start_address': 37706,
                 'value_type': 'F32LE',
@@ -843,7 +843,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Reactive energy delivered capacitive phase 3 [varh]',
+                'name': 'Reactive energy delivered capacitive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q3',
                 'start_address': 37708,
                 'value_type': 'F32LE',
@@ -851,7 +851,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Total reactive energy delivered capacitive all phases [varh]',
+                'name': 'Total reactive energy delivered capacitive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ3',
                 'start_address': 37710,
                 'value_type': 'F32LE',
@@ -859,7 +859,7 @@ specs = [
                 'variants': ['V160'],
             },
             #{
-            #    'name': 'Total reactive energy consumed all phases [varh]',
+            #    'name': 'Total reactive energy consumed all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumImport',  # FIXME: value ID missing
             #    'start_address': 37712,
             #    'value_type': 'F32LE',
@@ -867,7 +867,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Total reactive energy delivered all phases [varh]',
+            #    'name': 'Total reactive energy delivered all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumExport',  # FIXME: value ID missing
             #    'start_address': 37714,
             #    'value_type': 'F32LE',
@@ -875,7 +875,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Total reactive energy absolutely all phases [varh]',
+            #    'name': 'Total reactive energy absolutely all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumIndCapSum',
             #    'start_address': 37716,  # FIXME: is this the same value as register 33034 (Total reactive energy)?
             #    'value_type': 'F32LE',
@@ -883,7 +883,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Total apparent energy all phases [VAh]',
+            #    'name': 'Total apparent energy all phases [0.001 kVAh]',
             #    'value_id': 'EnergyApparentLSumImExSum',
             #    'start_address': 37718,  # FIXME: is this the same value as register 33028 (Total apparent energy)?
             #    'value_type': 'F32LE',
@@ -891,7 +891,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             {
-                'name': 'Resettable active energy consumed phase 1 [Wh]',
+                'name': 'Resettable active energy consumed phase 1 [0.001 kWh]',
                 'value_id': 'EnergyActiveL1ImportResettable',
                 'start_address': 37760,
                 'value_type': 'F32LE',
@@ -899,7 +899,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy consumed phase 2 [Wh]',
+                'name': 'Resettable active energy consumed phase 2 [0.001 kWh]',
                 'value_id': 'EnergyActiveL2ImportResettable',
                 'start_address': 37762,
                 'value_type': 'F32LE',
@@ -907,7 +907,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy consumed phase 3 [Wh]',
+                'name': 'Resettable active energy consumed phase 3 [0.001 kWh]',
                 'value_id': 'EnergyActiveL3ImportResettable',
                 'start_address': 37764,
                 'value_type': 'F32LE',
@@ -915,7 +915,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total active energy consumed all phases [Wh]',
+                'name': 'Resettable total active energy consumed all phases [0.001 kWh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # EnergyActiveLSumImportResettable
                 'start_address': 37766,  # FIXME: is this the same value as register 33036 (Resettable active energy demand)?
                 'value_type': 'F32LE',
@@ -923,7 +923,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy delivered phase 1 [Wh]',
+                'name': 'Resettable active energy delivered phase 1 [0.001 kWh]',
                 'value_id': 'EnergyActiveL1ExportResettable',
                 'start_address': 37768,
                 'value_type': 'F32LE',
@@ -931,7 +931,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy delivered phase 2 [Wh]',
+                'name': 'Resettable active energy delivered phase 2 [0.001 kWh]',
                 'value_id': 'EnergyActiveL2ExportResettable',
                 'start_address': 37770,
                 'value_type': 'F32LE',
@@ -939,7 +939,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable active energy delivered phase 3 [Wh]',
+                'name': 'Resettable active energy delivered phase 3 [0.001 kWh]',
                 'value_id': 'EnergyActiveL3ExportResettable',
                 'start_address': 37772,
                 'value_type': 'F32LE',
@@ -947,7 +947,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total active energy delivered all phases [Wh]',
+                'name': 'Resettable total active energy delivered all phases [0.001 kWh]',
                 'value_id': 'VALUE_ID_GAP_FILLER',  # EnergyActiveLSumExportResettable
                 'start_address': 37774,  # FIXME: is this the same value as register 33042 (Resettable active energy delivery)?
                 'value_type': 'F32LE',
@@ -955,7 +955,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable Apparent energy consumed inductive phase 1 [VAh]',
+                'name': 'Resettable Apparent energy consumed inductive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q1Resettable',
                 'start_address': 37776,
                 'value_type': 'F32LE',
@@ -963,7 +963,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable Apparent energy consumed inductive phase 2 [VAh]',
+                'name': 'Resettable Apparent energy consumed inductive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q1Resettable',
                 'start_address': 37778,
                 'value_type': 'F32LE',
@@ -971,7 +971,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable Apparent energy consumed inductive phase 3 [VAh]',
+                'name': 'Resettable Apparent energy consumed inductive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q1Resettable',
                 'start_address': 37780,
                 'value_type': 'F32LE',
@@ -979,7 +979,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total apparent energy consumed inductive all phases [VAh]',
+                'name': 'Resettable total apparent energy consumed inductive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ1Resettable',
                 'start_address': 37782,
                 'value_type': 'F32LE',
@@ -987,7 +987,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered inductive phase 1 [VAh]',
+                'name': 'Resettable apparent energy delivered inductive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q2Resettable',
                 'start_address': 37784,
                 'value_type': 'F32LE',
@@ -995,7 +995,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered inductive phase 2 [VAh]',
+                'name': 'Resettable apparent energy delivered inductive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q2Resettable',
                 'start_address': 37786,
                 'value_type': 'F32LE',
@@ -1003,7 +1003,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered inductive phase 3 [VAh]',
+                'name': 'Resettable apparent energy delivered inductive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q2Resettable',
                 'start_address': 37788,
                 'value_type': 'F32LE',
@@ -1011,7 +1011,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total apparent energy delivered inductive all phases [VAh]',
+                'name': 'Resettable total apparent energy delivered inductive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ2Resettable',
                 'start_address': 37790,
                 'value_type': 'F32LE',
@@ -1019,7 +1019,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy consumed capacitive phase 1 [VAh]',
+                'name': 'Resettable apparent energy consumed capacitive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q4Resettable',
                 'start_address': 37792,
                 'value_type': 'F32LE',
@@ -1027,7 +1027,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy consumed capacitive phase 2 [VAh]',
+                'name': 'Resettable apparent energy consumed capacitive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q4Resettable',
                 'start_address': 37794,
                 'value_type': 'F32LE',
@@ -1035,7 +1035,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy consumed capacitive phase 3 [VAh]',
+                'name': 'Resettable apparent energy consumed capacitive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q4Resettable',
                 'start_address': 37796,
                 'value_type': 'F32LE',
@@ -1043,7 +1043,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total apparent energy consumed capacitive all phases [VAh]',
+                'name': 'Resettable total apparent energy consumed capacitive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ4Resettable',
                 'start_address': 37798,
                 'value_type': 'F32LE',
@@ -1051,7 +1051,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered capacitive phase 1 [VAh]',
+                'name': 'Resettable apparent energy delivered capacitive phase 1 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL1Q3Resettable',
                 'start_address': 37800,
                 'value_type': 'F32LE',
@@ -1059,7 +1059,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered capacitive phase 2 [VAh]',
+                'name': 'Resettable apparent energy delivered capacitive phase 2 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL2Q3Resettable',
                 'start_address': 37802,
                 'value_type': 'F32LE',
@@ -1067,7 +1067,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable apparent energy delivered capacitive phase 3 [VAh]',
+                'name': 'Resettable apparent energy delivered capacitive phase 3 [0.001 kVAh]',
                 'value_id': 'EnergyApparentL3Q3Resettable',
                 'start_address': 37804,
                 'value_type': 'F32LE',
@@ -1075,7 +1075,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total apparent energy delivered capacitive all phases [VAh]',
+                'name': 'Resettable total apparent energy delivered capacitive all phases [0.001 kVAh]',
                 'value_id': 'EnergyApparentLSumQ3Resettable',
                 'start_address': 37806,
                 'value_type': 'F32LE',
@@ -1083,7 +1083,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed inductive phase 1 [varh]',
+                'name': 'Resettable reactive energy consumed inductive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q1Resettable',
                 'start_address': 37808,
                 'value_type': 'F32LE',
@@ -1091,7 +1091,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed inductive phase 2 [varh]',
+                'name': 'Resettable reactive energy consumed inductive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q1Resettable',
                 'start_address': 37810,
                 'value_type': 'F32LE',
@@ -1099,7 +1099,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed inductive phase 3 [varh]',
+                'name': 'Resettable reactive energy consumed inductive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q1Resettable',
                 'start_address': 37812,
                 'value_type': 'F32LE',
@@ -1107,7 +1107,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total reactive energy consumed inductive all phases [varh]',
+                'name': 'Resettable total reactive energy consumed inductive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ1Resettable',
                 'start_address': 37814,
                 'value_type': 'F32LE',
@@ -1115,7 +1115,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered inductive phase 1 [varh]',
+                'name': 'Resettable reactive energy delivered inductive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q2Resettable',
                 'start_address': 37816,
                 'value_type': 'F32LE',
@@ -1123,7 +1123,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered inductive phase 2 [varh]',
+                'name': 'Resettable reactive energy delivered inductive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q2Resettable',
                 'start_address': 37818,
                 'value_type': 'F32LE',
@@ -1131,7 +1131,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered inductive phase 3 [varh]',
+                'name': 'Resettable reactive energy delivered inductive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q2Resettable',
                 'start_address': 37820,
                 'value_type': 'F32LE',
@@ -1139,7 +1139,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total reactive energy delivered inductive all phases [varh]',
+                'name': 'Resettable total reactive energy delivered inductive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ2Resettable',
                 'start_address': 37822,
                 'value_type': 'F32LE',
@@ -1147,7 +1147,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed capacitive phase 1 [varh]',
+                'name': 'Resettable reactive energy consumed capacitive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q4Resettable',
                 'start_address': 37824,
                 'value_type': 'F32LE',
@@ -1155,7 +1155,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed capacitive phase 2 [varh]',
+                'name': 'Resettable reactive energy consumed capacitive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q4Resettable',
                 'start_address': 37826,
                 'value_type': 'F32LE',
@@ -1163,7 +1163,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy consumed capacitive phase 3 [varh]',
+                'name': 'Resettable reactive energy consumed capacitive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q4Resettable',
                 'start_address': 37828,
                 'value_type': 'F32LE',
@@ -1171,7 +1171,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total reactive energy consumed capacitive all phases [varh]',
+                'name': 'Resettable total reactive energy consumed capacitive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ4Resettable',
                 'start_address': 37830,
                 'value_type': 'F32LE',
@@ -1179,7 +1179,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered capacitive phase 1 [varh]',
+                'name': 'Resettable reactive energy delivered capacitive phase 1 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL1Q3Resettable',
                 'start_address': 37832,
                 'value_type': 'F32LE',
@@ -1187,7 +1187,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered capacitive phase 2 [varh]',
+                'name': 'Resettable reactive energy delivered capacitive phase 2 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL2Q3Resettable',
                 'start_address': 37834,
                 'value_type': 'F32LE',
@@ -1195,7 +1195,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable reactive energy delivered capacitive phase 3 [varh]',
+                'name': 'Resettable reactive energy delivered capacitive phase 3 [0.001 kvarh]',
                 'value_id': 'EnergyReactiveL3Q3Resettable',
                 'start_address': 37836,
                 'value_type': 'F32LE',
@@ -1203,7 +1203,7 @@ specs = [
                 'variants': ['V160'],
             },
             {
-                'name': 'Resettable total reactive energy delivered capacitive all phases [varh]',
+                'name': 'Resettable total reactive energy delivered capacitive all phases [0.001 kvarh]',
                 'value_id': 'EnergyReactiveLSumQ3Resettable',
                 'start_address': 37838,
                 'value_type': 'F32LE',
@@ -1211,7 +1211,7 @@ specs = [
                 'variants': ['V160'],
             },
             #{
-            #    'name': 'Resettable total reactive energy consumed all phases [varh]',
+            #    'name': 'Resettable total reactive energy consumed all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumImportResettable',  # FIXME: value ID missing
             #    'start_address': 37840,
             #    'value_type': 'F32LE',
@@ -1219,7 +1219,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Resettable total reactive energy delivered all phases [varh]',
+            #    'name': 'Resettable total reactive energy delivered all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumExportResettable',  # FIXME: value ID missing
             #    'start_address': 37842,
             #    'value_type': 'F32LE',
@@ -1227,7 +1227,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Resettable total reactive energy absolutely all phases [varh]',
+            #    'name': 'Resettable total reactive energy absolutely all phases [0.001 kvarh]',
             #    'value_id': 'EnergyReactiveLSumIndCapSumResettable',
             #    'start_address': 37844,  # FIXME: is this the same value as register 33046 (Resettable reactive energy)?
             #    'value_type': 'F32LE',
@@ -1235,7 +1235,7 @@ specs = [
             #    'variants': ['V160'],
             #},
             #{
-            #    'name': 'Resettable total apparent energy all phases [VAh]',
+            #    'name': 'Resettable total apparent energy all phases [0.001 kVAh]',
             #    'value_id': 'EnergyApparentLSumImExSumResettable',
             #    'start_address': 37846,  # FIXME: is this the same value as register 33040 (Resettable apparent energy)?
             #    'value_type': 'F32LE',

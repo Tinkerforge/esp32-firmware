@@ -290,7 +290,7 @@ specs = [
                 'value_type': 'U32LE',
             },
             {
-                'name': 'Battery 1 plus 2 Rated Energy [0.001 kWh]',
+                'name': 'Battery 1 plus 2 Rated Energy [kWh]',
                 'value_id': 'Capacity',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
@@ -315,12 +315,12 @@ specs = [
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Battery 1 plus 2 Lifetime Export Energy Counter [0.001 kWh]',
+                'name': 'Battery 1 plus 2 Lifetime Export Energy Counter [kWh]',
                 'value_id': 'EnergyDCDischarge',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },
             {
-                'name': 'Battery 1 plus 2 Lifetime Import Energy Counter [0.001 kWh]',
+                'name': 'Battery 1 plus 2 Lifetime Import Energy Counter [kWh]',
                 'value_id': 'EnergyDCCharge',
                 'start_address': 'START_ADDRESS_VIRTUAL',
             },

@@ -1105,7 +1105,7 @@ specs = [
         'register_type': 'HoldingRegister',
         'values': [
             {
-                'name': 'Solar Energy Total [0.1 kWh]',
+                'name': 'Solar Energy Total [0.01 kWh]',
                 'value_id': 'EnergyPVSumExport',
                 'start_address': 39601,
                 'value_type': 'U32BE',

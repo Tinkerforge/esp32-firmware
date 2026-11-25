@@ -290,6 +290,27 @@ for spec in specs:
 
             value_names.append(value['name'])
 
+            spec_scale_factor = value.get('scale_factor', 1.0)
+
+            if isinstance(spec_scale_factor, str):
+                spec_scale_factor = None
+            else:
+                spec_scale_factor = abs(spec_scale_factor)
+
+                if spec_scale_factor == 1.0:
+                    spec_scale_factor = None
+
+            m = re.search(r'\[(\d+(?:\.\d+)?)[^\]]*\]', value['name'])
+
+            if m == None:
+                unit_scale_factor = None
+            else:
+                unit_scale_factor = float(m.group(1))
+
+            if spec_scale_factor != unit_scale_factor:
+                print(f'Error: Value {spec_name.space} / {value["name"]} has scale factor to unit mismatch: {spec_scale_factor} != {unit_scale_factor}')
+                sys.exit(1)
+
             calculate = value.get('calculate', False)
 
             if calculate:
