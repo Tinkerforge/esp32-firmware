@@ -1265,10 +1265,10 @@ bool MeterModbusTCP::parse()
             value = fronius_gen24_plus.chastate * get_sun_spec_scale_factor(fronius_gen24_plus.chastate_sf);
         }
         else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryChargeEnergy_Virtual) {
-            value = fronius_gen24_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf) * 0.001f;
+            value = fronius_gen24_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf);
         }
         else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryDischargeEnergy_Virtual) {
-            value = fronius_gen24_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf) * 0.001f;
+            value = fronius_gen24_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf);
         }
     }
     else if (is_solaredge_hybrid_inverter_battery_1_plus_2_meter()) {
@@ -2011,10 +2011,10 @@ bool MeterModbusTCP::parse()
             value = fronius_verto_plus.chastate * get_sun_spec_scale_factor(fronius_verto_plus.chastate_sf);
         }
         else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryChargeEnergy_Virtual) {
-            value = fronius_verto_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf) * 0.001f;
+            value = fronius_verto_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf);
         }
         else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryDischargeEnergy_Virtual) {
-            value = fronius_verto_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf) * 0.001f;
+            value = fronius_verto_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf);
         }
     }
 

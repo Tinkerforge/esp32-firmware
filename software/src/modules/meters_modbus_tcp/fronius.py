@@ -68,10 +68,11 @@ battery_integer_values_gen24 = [
         'value_type': 'U16',  # SunSpec: uint16
     },
     {
-        'name': 'module/3/DCWH: Lifetime Charge Energy [Wh] | Charge DCWH',
+        'name': 'module/3/DCWH: Lifetime Charge Energy [0.001 kWh] | Charge DCWH',
         'value_id': 'VALUE_ID_META',
         'start_number': 40316,
         'value_type': 'U32BE',  # SunSpec: acc32
+        'scale_factor': 0.001,
     },
     {
         'name': 'module/4/DCA: DC Discharge Current [A] | Discharge DCA',
@@ -92,10 +93,11 @@ battery_integer_values_gen24 = [
         'value_type': 'U16',  # SunSpec: uint16
     },
     {
-        'name': 'module/4/DCWH: Lifetime Discharge Energy [Wh] | Discharge DCWH',
+        'name': 'module/4/DCWH: Lifetime Discharge Energy [0.001 kWh] | Discharge DCWH',
         'value_id': 'VALUE_ID_META',
         'start_number': 40336,
         'value_type': 'U32BE',  # SunSpec: acc32
+        'scale_factor': 0.001,
     },
     {
         'name': 'ChaState: Currently available energy as a percent of the capacity rating [%] | ChaState',
@@ -185,10 +187,11 @@ battery_integer_values_verto = [
         'value_type': 'U16',  # SunSpec: uint16
     },
     {
-        'name': 'module/4/DCWH: Lifetime Charge Energy [Wh] | Charge DCWH',
+        'name': 'module/4/DCWH: Lifetime Charge Energy [0.001 kWh] | Charge DCWH',
         'value_id': 'VALUE_ID_META',
         'start_number': 40336,
         'value_type': 'U32BE',  # SunSpec: acc32
+        'scale_factor': 0.001,
     },
     {
         'name': 'module/5/DCA: DC Discharge Current [A] | Discharge DCA',
@@ -209,10 +212,11 @@ battery_integer_values_verto = [
         'value_type': 'U16',  # SunSpec: uint16
     },
     {
-        'name': 'module/5/DCWH: Lifetime Discharge Energy [Wh] | Discharge DCWH',
+        'name': 'module/5/DCWH: Lifetime Discharge Energy [0.001 kWh] | Discharge DCWH',
         'value_id': 'VALUE_ID_META',
         'start_number': 40356,
         'value_type': 'U32BE',  # SunSpec: acc32
+        'scale_factor': 0.001,
     },
     {
         'name': 'ChaState: Currently available energy as a percent of the capacity rating [%] | ChaState',
