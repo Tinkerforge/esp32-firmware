@@ -113,11 +113,11 @@ specs = [
                 'value_type': 'U16',
             },
             {
-                'name': 'Grid Frequency [0.1 Hz]',
+                'name': 'Grid Frequency [0.01 Hz]',
                 'value_id': 'FrequencyLAvg',
                 'start_address': 1082,
                 'value_type': 'U16',
-                'scale_factor': 0.1,
+                'scale_factor': 0.01,
             },
             {
                 'name': 'Grid Power SF',
