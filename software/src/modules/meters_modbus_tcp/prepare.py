@@ -323,7 +323,7 @@ for spec in specs:
             address_name = ' '.join([word[0].upper() + word[1:] for word in address_name_words if len(word) > 0])
 
             if start_address == 'START_ADDRESS_VIRTUAL':
-                address_name = 'Virtual_' + address_name
+                address_name += '_Virtual'
                 start_address = start_address_virtual_next
                 start_address_virtual_next += 1
             else:

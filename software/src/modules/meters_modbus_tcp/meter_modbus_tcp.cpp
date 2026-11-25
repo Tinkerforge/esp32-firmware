@@ -961,8 +961,8 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VictronEnergyGXLoadAddress::ACConsumptionL3) {
             victron_energy_gx.ac_consumption_l3 = value;
         }
-        else if (spec->start_address == VictronEnergyGXLoadAddress::Virtual_ACConsumptionL1PlusL2PlusL3
-              || spec->start_address == VictronEnergyGXLoadAddress::Virtual_ACConsumptionL1PlusL2PlusL3Signed) {
+        else if (spec->start_address == VictronEnergyGXLoadAddress::ACConsumptionL1PlusL2PlusL3_Virtual
+              || spec->start_address == VictronEnergyGXLoadAddress::ACConsumptionL1PlusL2PlusL3Signed_Virtual) {
             value = victron_energy_gx.ac_consumption_l1
                   + victron_energy_gx.ac_consumption_l2
                   + victron_energy_gx.ac_consumption_l3;
@@ -999,7 +999,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VictronEnergyGXPVAddress::DCCoupledPVPower) {
             victron_energy_gx.dc_coupled_pv_power = value;
         }
-        else if (spec->start_address == VictronEnergyGXPVAddress::Virtual_TotalPVPower) {
+        else if (spec->start_address == VictronEnergyGXPVAddress::TotalPVPower_Virtual) {
             value = victron_energy_gx.ac_coupled_pv_power_on_output_l1
                   + victron_energy_gx.ac_coupled_pv_power_on_output_l2
                   + victron_energy_gx.ac_coupled_pv_power_on_output_l3
@@ -1043,23 +1043,23 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == GoodweInverterBattery1Plus2Address::Battery2Capacity) {
             goodwe_inverter.battery_2_capacity = value;
         }
-        else if (spec->start_address == GoodweInverterBattery1Plus2Address::Virtual_BatteryVoltageAvg) {
+        else if (spec->start_address == GoodweInverterBattery1Plus2Address::BatteryVoltageAvg_Virtual) {
             value = (goodwe_inverter.battery_1_voltage
                   +  goodwe_inverter.battery_2_voltage) / 2.0f;
         }
-        else if (spec->start_address == GoodweInverterBattery1Plus2Address::Virtual_BatteryCurrentSum) {
+        else if (spec->start_address == GoodweInverterBattery1Plus2Address::BatteryCurrentSum_Virtual) {
             value = goodwe_inverter.battery_1_current
                   + goodwe_inverter.battery_2_current;
         }
-        else if (spec->start_address == GoodweInverterBattery1Plus2Address::Virtual_BatteryPowerSum) {
+        else if (spec->start_address == GoodweInverterBattery1Plus2Address::BatteryPowerSum_Virtual) {
             value = goodwe_inverter.battery_1_power
                   + goodwe_inverter.battery_2_power;
         }
-        else if (spec->start_address == GoodweInverterBattery1Plus2Address::Virtual_BMSPackTemperatureAvg) {
+        else if (spec->start_address == GoodweInverterBattery1Plus2Address::BMSPackTemperatureAvg_Virtual) {
             value = (goodwe_inverter.bms_1_pack_temperature
                   +  goodwe_inverter.bms_2_pack_temperature) / 2.0f;
         }
-        else if (spec->start_address == GoodweInverterBattery1Plus2Address::Virtual_BatteryCapacityAvg) {
+        else if (spec->start_address == GoodweInverterBattery1Plus2Address::BatteryCapacityAvg_Virtual) {
             value = (goodwe_inverter.battery_1_capacity
                   +  goodwe_inverter.battery_2_capacity) / 2.0f;
         }
@@ -1152,7 +1152,7 @@ bool MeterModbusTCP::parse()
 
             goodwe_inverter.pv4_power = value;
         }
-        else if (spec->start_address == GoodweInverterPVAddress::Virtual_AveragePVVoltage) {
+        else if (spec->start_address == GoodweInverterPVAddress::AveragePVVoltage_Virtual) {
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
@@ -1178,13 +1178,13 @@ bool MeterModbusTCP::parse()
 
             value = voltage_sum / voltage_count;
         }
-        else if (spec->start_address == GoodweInverterPVAddress::Virtual_TotalPVCurrent) {
+        else if (spec->start_address == GoodweInverterPVAddress::TotalPVCurrent_Virtual) {
             value = goodwe_inverter.pv1_current
                   + goodwe_inverter.pv2_current
                   + goodwe_inverter.pv3_current
                   + goodwe_inverter.pv4_current;
         }
-        else if (spec->start_address == GoodweInverterPVAddress::Virtual_TotalPVPower) {
+        else if (spec->start_address == GoodweInverterPVAddress::TotalPVPower_Virtual) {
             value = goodwe_inverter.pv1_power
                   + goodwe_inverter.pv2_power
                   + goodwe_inverter.pv3_power
@@ -1240,34 +1240,34 @@ bool MeterModbusTCP::parse()
         else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::ChaState_SF) {
             fronius_gen24_plus.chastate_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryCurrent) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryCurrent_Virtual) {
             float dca_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dca_sf);
             float charge_dca       = fronius_gen24_plus.charge_dca    * dca_scale_factor;
             float discharge_dca    = fronius_gen24_plus.discharge_dca * dca_scale_factor;
 
             value = charge_dca - discharge_dca; // One of the two value is always 0A
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryVoltage) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryVoltage_Virtual) {
             float dcv_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dcv_sf);
             float charge_dcv       = fronius_gen24_plus.charge_dcv    * dcv_scale_factor;
             float discharge_dcv    = fronius_gen24_plus.discharge_dcv * dcv_scale_factor;
 
             value = std::max(charge_dcv, discharge_dcv); // In firmware versions <= 1.30 one of the two values is always 0V. In firmware versions >= 1.31 they are the same
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryPower) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryPower_Virtual) {
             float dcw_scale_factor = get_sun_spec_scale_factor(fronius_gen24_plus.dcw_sf);
             float charge_dcw       = fronius_gen24_plus.charge_dcw    * dcw_scale_factor;
             float discharge_dcw    = fronius_gen24_plus.discharge_dcw * dcw_scale_factor;
 
             value = charge_dcw - discharge_dcw; // One of the two value is always 0W
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryStateOfCharge) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryStateOfCharge_Virtual) {
             value = fronius_gen24_plus.chastate * get_sun_spec_scale_factor(fronius_gen24_plus.chastate_sf);
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryChargeEnergy) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryChargeEnergy_Virtual) {
             value = fronius_gen24_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf) * 0.001f;
         }
-        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::Virtual_BatteryDischargeEnergy) {
+        else if (start_address == FroniusGEN24PlusBatteryIntegerAddress::BatteryDischargeEnergy_Virtual) {
             value = fronius_gen24_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_gen24_plus.dcwh_sf) * 0.001f;
         }
     }
@@ -1326,35 +1326,35 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery2Status) {
             solaredge_hybrid_inverter.battery_2_status = c32.u;
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2RatedEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2RatedEnergy_Virtual) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_rated_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_rated_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2AverageTemperature) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2AverageTemperature_Virtual) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_temperature,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_temperature);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousVoltage) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2InstantaneousVoltage_Virtual) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_voltage,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_voltage);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousCurrent) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2InstantaneousCurrent_Virtual) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_current,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_current);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2InstantaneousPower) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2InstantaneousPower_Virtual) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_power,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_power);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2LifetimeExportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2LifetimeExportEnergyCounter_Virtual) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_export_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_export_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2LifetimeImportEnergyCounter) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2LifetimeImportEnergyCounter_Virtual) {
             value = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_import_energy,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_import_energy);
         }
-        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Virtual_Battery1Plus2StateOfEnergy) {
+        else if (spec->start_address == SolaredgeHybridInverterBattery1Plus2Address::Battery1Plus2StateOfEnergy_Virtual) {
             value = nan_safe_avg(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_state_of_charge,
                                  solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_state_of_charge);
         }
@@ -1378,7 +1378,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolaredgeHybridInverterPVAddress::DCPower_SF) {
             solaredge_hybrid_inverter.dc_power_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
-        else if (spec->start_address == SolaredgeHybridInverterPVAddress::Virtual_PVPower) {
+        else if (spec->start_address == SolaredgeHybridInverterPVAddress::PVPower_Virtual) {
             float battery_power = nan_safe_sum(solaredge_hybrid_inverter.battery_1_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_1_power,
                                                solaredge_hybrid_inverter.battery_2_status == 0 /* off */ ? NAN : solaredge_hybrid_inverter.battery_2_power);
 
@@ -1745,7 +1745,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SMAHybridInverterBatteryAddress::BatDschCurBatDsch) {
             sma_hybrid_inverter.battery_discharge_power = value;
         }
-        else if (spec->start_address == SMAHybridInverterBatteryAddress::Virtual_BatteryPower) {
+        else if (spec->start_address == SMAHybridInverterBatteryAddress::BatteryPower_Virtual) {
             value = sma_hybrid_inverter.battery_charge_power - sma_hybrid_inverter.battery_discharge_power;
         }
     }
@@ -1756,7 +1756,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VARTAFlexGridAddress::GridPowerSF) {
             varta_flex.grid_power_sf = static_cast<int16_t>(c16.u);
         }
-        else if (spec->start_address == VARTAFlexGridAddress::Virtual_ScaledGridPower) {
+        else if (spec->start_address == VARTAFlexGridAddress::ScaledGridPower_Virtual) {
             value = varta_flex.grid_power * get_sun_spec_scale_factor(varta_flex.grid_power_sf);
         }
     }
@@ -1779,13 +1779,13 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == VARTAFlexBatteryAddress::TotalChargeEnergySF) {
             varta_flex.battery_total_charge_energy_sf = static_cast<int16_t>(c16.u);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::Virtual_ScaledActivePower) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledActivePower_Virtual) {
             value = varta_flex.battery_active_power * get_sun_spec_scale_factor(varta_flex.battery_active_power_sf);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::Virtual_ScaledApparentPower) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledApparentPower_Virtual) {
             value = varta_flex.battery_apparent_power * get_sun_spec_scale_factor(varta_flex.battery_apparent_power_sf);
         }
-        else if (spec->start_address == VARTAFlexBatteryAddress::Virtual_ScaledTotalChargeEnergy) {
+        else if (spec->start_address == VARTAFlexBatteryAddress::ScaledTotalChargeEnergy_Virtual) {
             value = varta_flex.battery_total_charge_energy * get_sun_spec_scale_factor(varta_flex.battery_total_charge_energy_sf);
         }
     }
@@ -1796,7 +1796,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolisHybridInverterBatteryAddress::BatteryCurrentDirection) {
             solis_hybrid_inverter.battery_current_direction = c16.u;
         }
-        else if (spec->start_address == SolisHybridInverterBatteryAddress::Virtual_BatteryCurrentSigned) {
+        else if (spec->start_address == SolisHybridInverterBatteryAddress::BatteryCurrentSigned_Virtual) {
             value = solis_hybrid_inverter.battery_current;
 
             if (solis_hybrid_inverter.battery_current_direction != 0) { // 0 = charge, 1 = discharge
@@ -1806,7 +1806,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolisHybridInverterBatteryAddress::BatteryPower) {
             solis_hybrid_inverter.battery_power = value;
         }
-        else if (spec->start_address == SolisHybridInverterBatteryAddress::Virtual_BatteryPowerSigned) {
+        else if (spec->start_address == SolisHybridInverterBatteryAddress::BatteryPowerSigned_Virtual) {
             value = solis_hybrid_inverter.battery_power;
 
             if (solis_hybrid_inverter.battery_current_direction != 0) { // 0 = charge, 1 = discharge
@@ -1821,8 +1821,8 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolisHybridInverterLoadAddress::BackupLoadPower) {
             solis_hybrid_inverter.backup_load_power = value;
         }
-        else if (spec->start_address == SolisHybridInverterLoadAddress::Virtual_TotalLoadPower
-              || spec->start_address == SolisHybridInverterLoadAddress::Virtual_TotalLoadPowerSigned) {
+        else if (spec->start_address == SolisHybridInverterLoadAddress::TotalLoadPower_Virtual
+              || spec->start_address == SolisHybridInverterLoadAddress::TotalLoadPowerSigned_Virtual) {
             value = solis_hybrid_inverter.house_load_power + solis_hybrid_inverter.backup_load_power;
         }
     }
@@ -1851,7 +1851,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == SolisHybridInverterPVAddress::DCCurrent4) {
             solis_hybrid_inverter.dc_current_4 = value;
         }
-        else if (spec->start_address == SolisHybridInverterPVAddress::Virtual_AverageDCVoltage) {
+        else if (spec->start_address == SolisHybridInverterPVAddress::AverageDCVoltage_Virtual) {
             float voltage_sum = 0.0f;
             float voltage_count = 0.0f;
 
@@ -1881,7 +1881,7 @@ bool MeterModbusTCP::parse()
 
             value = voltage_sum / voltage_count;
         }
-        else if (spec->start_address == SolisHybridInverterPVAddress::Virtual_TotalDCCurrent) {
+        else if (spec->start_address == SolisHybridInverterPVAddress::TotalDCCurrent_Virtual) {
             value = solis_hybrid_inverter.dc_current_1
                   + solis_hybrid_inverter.dc_current_2
                   + solis_hybrid_inverter.dc_current_3
@@ -1895,7 +1895,7 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == GrowattHybridInverterGridAddress::PtogridTotalTotalReversePower) {
             growatt_hybrid_inverter.grid_reverse_power = value;
         }
-        else if (spec->start_address == GrowattHybridInverterGridAddress::Virtual_TotalPowerSigned) {
+        else if (spec->start_address == GrowattHybridInverterGridAddress::TotalPowerSigned_Virtual) {
             value = growatt_hybrid_inverter.grid_forward_power - growatt_hybrid_inverter.grid_reverse_power;
         }
     }
@@ -1909,14 +1909,14 @@ bool MeterModbusTCP::parse()
         else if (spec->start_address == GrowattHybridInverterBatteryAddress::PchrChargePower) {
             growatt_hybrid_inverter.battery_power_signed = value - growatt_hybrid_inverter.battery_discharge_power;
         }
-        else if (spec->start_address == GrowattHybridInverterBatteryAddress::Virtual_BatteryCurrentSigned) {
+        else if (spec->start_address == GrowattHybridInverterBatteryAddress::BatteryCurrentSigned_Virtual) {
             value = growatt_hybrid_inverter.battery_current;
 
             if (growatt_hybrid_inverter.battery_power_signed < 0.0f) {
                 value = zero_safe_negation(value);
             }
         }
-        else if (spec->start_address == GrowattHybridInverterBatteryAddress::Virtual_BatteryPowerSigned) {
+        else if (spec->start_address == GrowattHybridInverterBatteryAddress::BatteryPowerSigned_Virtual) {
             value = growatt_hybrid_inverter.battery_power_signed;
         }
     }
@@ -1924,7 +1924,7 @@ bool MeterModbusTCP::parse()
         if (spec->start_address == GrowattHybridInverterLoadAddress::PtoloadTotalTotalLoadPower) {
             growatt_hybrid_inverter.total_load_power = value;
         }
-        else if (spec->start_address == GrowattHybridInverterLoadAddress::Virtual_TotalLoadPowerSigned) {
+        else if (spec->start_address == GrowattHybridInverterLoadAddress::TotalLoadPowerSigned_Virtual) {
             value = growatt_hybrid_inverter.total_load_power;
         }
     }
@@ -1977,34 +1977,34 @@ bool MeterModbusTCP::parse()
         else if (start_address == FroniusVertoPlusBatteryIntegerAddress::ChaState_SF) {
             fronius_verto_plus.chastate_sf = static_cast<int16_t>(c16.u); // SunSpec: sunssf
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryCurrent) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryCurrent_Virtual) {
             float dca_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dca_sf);
             float charge_dca       = fronius_verto_plus.charge_dca    * dca_scale_factor;
             float discharge_dca    = fronius_verto_plus.discharge_dca * dca_scale_factor;
 
             value = charge_dca - discharge_dca; // One of the two value is always 0A
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryVoltage) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryVoltage_Virtual) {
             float dcv_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dcv_sf);
             float charge_dcv       = fronius_verto_plus.charge_dcv    * dcv_scale_factor;
             float discharge_dcv    = fronius_verto_plus.discharge_dcv * dcv_scale_factor;
 
             value = std::max(charge_dcv, discharge_dcv); // In firmware versions <= 1.30 one of the two values is always 0V. In firmware versions >= 1.31 they are the same
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryPower) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryPower_Virtual) {
             float dcw_scale_factor = get_sun_spec_scale_factor(fronius_verto_plus.dcw_sf);
             float charge_dcw       = fronius_verto_plus.charge_dcw    * dcw_scale_factor;
             float discharge_dcw    = fronius_verto_plus.discharge_dcw * dcw_scale_factor;
 
             value = charge_dcw - discharge_dcw; // One of the two value is always 0W
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryStateOfCharge) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryStateOfCharge_Virtual) {
             value = fronius_verto_plus.chastate * get_sun_spec_scale_factor(fronius_verto_plus.chastate_sf);
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryChargeEnergy) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryChargeEnergy_Virtual) {
             value = fronius_verto_plus.charge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf) * 0.001f;
         }
-        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::Virtual_BatteryDischargeEnergy) {
+        else if (start_address == FroniusVertoPlusBatteryIntegerAddress::BatteryDischargeEnergy_Virtual) {
             value = fronius_verto_plus.discharge_dcwh * get_sun_spec_scale_factor(fronius_verto_plus.dcwh_sf) * 0.001f;
         }
     }
