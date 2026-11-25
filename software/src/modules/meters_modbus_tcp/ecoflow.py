@@ -232,7 +232,7 @@ specs = [
                 'value_type': 'F32LE',
             },
             {
-                'name': 'Current Total Load Power - Signed [W]',
+                'name': 'Current Total Load Power Signed [W]',
                 'value_id': 'PowerActiveLSumImExDiff',
                 'start_address': offset_to_address(0x0206),
                 'value_type': 'F32LE',
