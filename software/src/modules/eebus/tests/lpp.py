@@ -436,7 +436,7 @@ def test_p9_eeg_written_failsafe_has_priority(tc: TestContext):
     """The §9 EEG default level is only the pre-configured failsafe limit (LPP-021/1).
     The failsafe limit written by the Energy Guard has priority (LPP-903)."""
     require_p9_eeg(tc)
-    tc.api("p9_eeg/config_update", p9_eeg_config(default_level_pct=0))
+    tc.api("p9_eeg/config_update", p9_eeg_config(default_level_pct=30))
     time.sleep(1)
     tc.assert_eq(BASE_FAILSAFE[0], lpp_state(tc)["failsafe_limit_power_w"])
     tc.assert_eq(BASE_FAILSAFE[0], lpp.read_failsafe()[lpp.failsafe_power_key]["scaledNumber"]["number"])
