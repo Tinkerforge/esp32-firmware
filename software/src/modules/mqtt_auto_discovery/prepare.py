@@ -569,6 +569,7 @@ entities = [
         availability=[],
         static_info_homeassistant={
             "value_template": "{{(value_json.allowed_charging_current | float / 1000) | round(3)}}",
+            "suggested_display_precision": 3,
             "unit_of_measurement": "A",
             "device_class": "current",
             "state_class": "measurement",
@@ -754,6 +755,7 @@ entities = [
             "device_class": "energy",
             # The forecast API uses -1 for missing data; preserve genuine zero forecasts.
             "value_template": "{{(value_json.wh_tomorrow | float / 1000) | round(2) if value_json.wh_tomorrow >= 0 else 'None'}}",
+            "suggested_display_precision": 2,
             "icon": "mdi:solar-power-variant-outline",
             "unit_of_measurement": "kWh",
         },
@@ -771,6 +773,7 @@ entities = [
         static_info_homeassistant={
             "device_class": "energy",
             "value_template": "{{(value_json.wh_today | float / 1000) | round(2) if value_json.wh_today >= 0 else 'None'}}",
+            "suggested_display_precision": 2,
             "icon": "mdi:solar-power-variant",
             "unit_of_measurement": "kWh",
         },
@@ -788,6 +791,7 @@ entities = [
         static_info_homeassistant={
             "device_class": "energy",
             "value_template": "{{(value_json.wh_today_remaining | float / 1000) | round(2) if value_json.wh_today_remaining >= 0 else 'None'}}",
+            "suggested_display_precision": 2,
             "icon": "mdi:solar-power",
             "unit_of_measurement": "kWh",
         },
@@ -808,6 +812,7 @@ entities = [
             "state_class": "measurement",
             # INT32_MAX denotes an unavailable price; negative prices are valid.
             "value_template": "{{(value_json.current_price | float / 1000) | round(2) if value_json.current_price != 2147483647 else 'None'}}",
+            "suggested_display_precision": 2,
             "icon": "mdi:solar-power",
             "unit_of_measurement": "ct/kWh",
         },
@@ -867,7 +872,8 @@ if warp_edition == "warp4":
             name_en="Vehicle State of Charge",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.soc | float if value_json.soc is not none else 'None'}}",
+                "value_template": "{{value_json.soc | round(1) if value_json.soc is not none else 'None'}}",
+                "suggested_display_precision": 1,
                 "device_class": "battery",
                 "unit_of_measurement": "%",
                 "state_class": "measurement",
@@ -883,7 +889,8 @@ if warp_edition == "warp4":
             name_en="Vehicle Battery Capacity",
             availability=[AvailabilityEntry("ev/state", "{{ 'online' if value_json.mac else 'offline' }}")],
             static_info_homeassistant={
-                "value_template": "{{value_json.capacity | float if value_json.capacity is not none else 'None'}}",
+                "value_template": "{{value_json.capacity | round(1) if value_json.capacity is not none else 'None'}}",
+                "suggested_display_precision": 1,
                 "device_class": "energy_storage",
                 "unit_of_measurement": "kWh",
                 "state_class": "measurement",
@@ -911,6 +918,7 @@ for object_id, field, name_de, name_en, rounding, unit, device_class, state_clas
             availability=[],
             static_info_homeassistant={
                 "value_template": f"{{{{value_json.{field} | round({rounding}) if value_json.{field} is not none else 'None'}}}}",
+                "suggested_display_precision": rounding,
                 "unit_of_measurement": unit,
                 "device_class": device_class,
                 "state_class": state_class,
@@ -931,6 +939,7 @@ for phase in range(1, 4):
             availability=[],
             static_info_homeassistant={
                 "value_template": f"{{{{value_json[{index}] | round(3) if value_json[{index}] is not none else 'None'}}}}",
+                "suggested_display_precision": 3,
                 "unit_of_measurement": "A",
                 "device_class": "current",
                 "state_class": "measurement",
@@ -947,6 +956,7 @@ for meter_id in range(0, meters_max_slots):
         static_info = {
             "unit_of_measurement": unit,
             "state_class": state_class,
+            "suggested_display_precision": rounding,
         }
         if dev_class is not None:
             static_info["device_class"] = dev_class
