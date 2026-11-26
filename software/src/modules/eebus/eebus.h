@@ -28,14 +28,6 @@
 
 #include "generated/module_available.h"
 #include "eebus_config.h"
-
-#if MODULE_AUTOMATION_AVAILABLE() && EEBUS_ENABLE_LPP_USECASE()
-#define EEBUS_LPP_AUTOMATION_TRIGGER() 1
-#include "modules/automation/automation_backend.h"
-#else
-#define EEBUS_LPP_AUTOMATION_TRIGGER() 0
-#endif
-
 #include "generated/module_available_end.h"
 
 // Forward declarations (so we don't have to include spine_types.h here)
@@ -43,9 +35,6 @@ class EEBusUseCases;
 class SpineDataTypeHandler;
 
 class EEBus final : public IModule
-#if EEBUS_LPP_AUTOMATION_TRIGGER()
-                  , public IAutomationBackend
-#endif
 {
 public:
     EEBus();
@@ -133,31 +122,25 @@ public:
         return module_enabled;
     }
 
-#if EEBUS_LPP_AUTOMATION_TRIGGER()
-    bool has_triggered(const Config *conf, void *data) override;
-#endif
-
 #if EEBUS_ENABLE_LPP_USECASE()
     /**
-     * Called by the LPP use case whenever its state could have changed. Reports the state to the automation module if it changed.
-     * The production counts as limited in the states "limited", and in "init" and "failsafe" if the failsafe limit limits it.
+     * Called by the LPP use case whenever its state could have changed. Reports the limit to §9 EEG.
+     * The production counts as limited in the states "limited", and in "init" and "failsafe" if the
+     * failsafe limit limits it. limit_w is the effective production limit.
      */
-    void report_lpp_limited(bool limited);
+    void report_lpp_limited(bool limited, int limit_w);
 #endif
+
+    /**
+     * Pre-configured Failsafe Production Active Power Limit of LPP (LPP-021/1) in W, -1 to use the nominal maximum power.
+     * Set by §9 EEG from its default level.
+     */
+    void set_lpp_preconfigured_failsafe(int power_w);
 
 private:
     bool module_enabled = false;
     String eebus_name{};
-
-#if EEBUS_ENABLE_LPP_USECASE()
-    enum class LppTriggerState : uint8_t {
-        Unknown,
-        NotLimited,
-        Limited,
-    };
-    LppTriggerState lpp_trigger_state = LppTriggerState::Unknown;
-    void set_lpp_trigger_state(LppTriggerState new_state);
-#endif
+    int lpp_preconfigured_failsafe_w = -1;
 
 #if EEBUS_MODE_EVSE()
     /**

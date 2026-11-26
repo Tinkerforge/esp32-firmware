@@ -93,16 +93,6 @@ let x = {
             "ski_required": "SKI is required",
             "ip_invalid": "IP address is invalid",
             "add_peer_failed": "Failed to add peer"
-        },
-        "automation": {
-            "automation_trigger": "§9 EEG (EEBUS feed-in limitation)",
-            "state": "State",
-            "limited": "Triggered",
-            "not_limited": "Not triggered",
-            "trigger_disabled": "EEBUS is disabled",
-            "automation_trigger_text": /*FFN*/(limited: boolean) => limited
-                ? <>If <b>§9 EEG</b> (EEBUS feed-in limitation) is <b>triggered</b>,{" "}</>
-                : <>If <b>§9 EEG</b> (EEBUS feed-in limitation) is <b>no longer triggered</b>,{" "}</>/*NF*/
         }
     }
 }

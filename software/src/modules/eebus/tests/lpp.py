@@ -1,14 +1,15 @@
 #!/usr/bin/env -S uv run --group tests --script
 
-# LPP (Limitation of Power Production) tests with an Energy Guard test peer, including the EEBUS LPP automation trigger.
+# LPP (Limitation of Power Production) tests with an Energy Guard test peer, including §9 EEG with source EEBUS
+# and its automation trigger.
 #
 # The device under test is the Controllable System (energy manager). The test peer connects to its SHIP server,
 # announces the Energy Guard actor of LPP, binds to LoadControl and DeviceConfiguration and writes limits.
 # Other trusted EEBUS peers are removed during the suite and restored afterwards.
 #
 # Every test starts with a connected and bound Energy Guard that controls the device without a limit
-# ("unlimited/controlled"), with the failsafe values BASE_FAILSAFE and with two automation rules
-# (production limited / not limited -> print) that did not fire yet, see setup().
+# ("unlimited/controlled"), with the failsafe values BASE_FAILSAFE and, if §9 EEG is available, with §9 EEG configured
+# as P9_EEG_CONFIG and two automation rules (§9 EEG limited / not limited -> print) that did not fire yet, see setup().
 
 import time
 from urllib.error import HTTPError
@@ -22,7 +23,7 @@ from software.src.modules.eebus.tests._eebus_peer import (
     ERROR_NO_ERROR, ERROR_COMMAND_REJECTED,
 )
 
-TRIGGER_EEBUS_LPP = 27
+TRIGGER_P9_EEG = 27
 ACTION_PRINT = 1
 
 RULE_LIMITED = 0
@@ -36,6 +37,16 @@ BASE_FAILSAFE = (5000, 2 * 3600)  # (power W, duration s)
 removed_peers: list[dict] = []
 original_failsafe: tuple[int, int] | None = None  # (power W, duration s), restored after the suite, as they are persistent
 original_automation_config: dict | None = None
+original_p9_eeg_config: dict | None = None
+
+# 10 kW inverter with the levels 0 %, 30 % and 100 %. Limits from 3000 W to 9999 W lead to 30 %.
+P9_EEG_CONFIG = {
+    "enable": True,
+    "source": 0,  # EEBUS
+    "inverter_power_w": 10000,
+    "relays": [30, 0],
+    "default_level_pct": 100,
+}
 
 
 def lpp_state(tc: TestContext) -> dict:
@@ -66,19 +77,30 @@ def get_last_run(tc: TestContext) -> list[int]:
     return tc.api("automation/state")["last_run"]
 
 
+def require_p9_eeg(tc: TestContext):
+    if original_p9_eeg_config is None:
+        tc.skip("§9 EEG not available on this device")
+
+
+def p9_eeg_config(**changes) -> dict:
+    config = {**P9_EEG_CONFIG, **changes}
+    config["relays"] = config["relays"][:len(original_p9_eeg_config["relays"])]
+    return config
+
+
 def set_rules(tc: TestContext):
-    """Two fresh rules that did not fire yet: production limited -> print, not limited -> print."""
+    """Two fresh rules that did not fire yet: §9 EEG limited -> print, not limited -> print."""
     tc.api("automation/config_update", {"tasks": []})
     tc.wait_for(lambda: tc.assert_eq([], get_last_run(tc)))
     tc.api("automation/config_update", {"tasks": [
         {
-            "trigger": [TRIGGER_EEBUS_LPP, {"limited": True}],
-            "action": [ACTION_PRINT, {"message": "LPP test: production limited"}],
+            "trigger": [TRIGGER_P9_EEG, {"limited": True}],
+            "action": [ACTION_PRINT, {"message": "LPP test: §9 EEG limited"}],
             "delay": 0,
         },
         {
-            "trigger": [TRIGGER_EEBUS_LPP, {"limited": False}],
-            "action": [ACTION_PRINT, {"message": "LPP test: production not limited"}],
+            "trigger": [TRIGGER_P9_EEG, {"limited": False}],
+            "action": [ACTION_PRINT, {"message": "LPP test: §9 EEG not limited"}],
             "delay": 0,
         },
     ]})
@@ -132,7 +154,7 @@ def take_control(tc: TestContext, guard_lpp: LppEnergyGuard):
 
 
 def suite_setup(tc: TestContext):
-    global removed_peers, original_failsafe, original_automation_config
+    global removed_peers, original_failsafe, original_automation_config, original_p9_eeg_config
     tc.set_test_timeout(120)
 
     enable_eebus(tc)
@@ -141,6 +163,10 @@ def suite_setup(tc: TestContext):
     state = lpp_state(tc)
     original_failsafe = (state["failsafe_limit_power_w"], state["failsafe_limit_duration_s"])
     original_automation_config = tc.api("automation/config")
+    try:
+        original_p9_eeg_config = tc.api("p9_eeg/config")
+    except HTTPError:
+        original_p9_eeg_config = None
     removed_peers = isolate_eebus_peers(tc)
 
 
@@ -156,7 +182,10 @@ def setup(tc: TestContext):
     state = lpp_state(tc)
     if (state["failsafe_limit_power_w"], state["failsafe_limit_duration_s"]) != BASE_FAILSAFE:
         expect_ack(tc, lpp.write_failsafe(*BASE_FAILSAFE))
-    set_rules(tc)
+    if original_p9_eeg_config is not None:
+        tc.api("p9_eeg/config_update", p9_eeg_config())
+        tc.wait_for(lambda: tc.assert_eq(100, tc.api("p9_eeg/state")["level_pct"]))
+        set_rules(tc)
 
 
 def restore_failsafe(tc: TestContext):
@@ -186,6 +215,8 @@ def suite_teardown(tc: TestContext):
     restore_eebus_peers(tc, removed_peers)
     if original_automation_config is not None:
         tc.api("automation/config_update", original_automation_config)
+    if original_p9_eeg_config is not None:
+        tc.api("p9_eeg/config_update", original_p9_eeg_config)
 
 
 # ---------------------------------------------------------------------------
@@ -237,7 +268,8 @@ def test_positive_limit_rejected(tc: TestContext):
     """A positive production limit is rejected and the state is kept (LPP-001, LPP-003/1)."""
     expect_nack(tc, lpp.write_limit(1000, active=True))
     tc.assert_eq(LPC_UNLIMITED_CONTROLLED, lpp_state(tc)["usecase_state"])
-    tc.assert_eq([0, 0], get_last_run(tc))
+    if original_p9_eeg_config is not None:
+        tc.assert_eq([0, 0], get_last_run(tc))
 
 
 def test_limit(tc: TestContext):
@@ -262,17 +294,19 @@ def test_constraints(tc: TestContext):
 
 
 # ---------------------------------------------------------------------------
-# Automation trigger
+# §9 EEG automation trigger
 # ---------------------------------------------------------------------------
 
 def test_trigger_registered_and_enabled(tc: TestContext):
+    require_p9_eeg(tc)
     state = tc.api("automation/state")
-    tc.assert_true(TRIGGER_EEBUS_LPP in state["registered_triggers"])
-    tc.assert_true(TRIGGER_EEBUS_LPP in state["enabled_triggers"])
+    tc.assert_true(TRIGGER_P9_EEG in state["registered_triggers"])
+    tc.assert_true(TRIGGER_P9_EEG in state["enabled_triggers"])
 
 
 def test_trigger_on_limit_and_release(tc: TestContext):
     """Activating the limit fires "limited", deactivating it fires "not limited"."""
+    require_p9_eeg(tc)
     expect_ack(tc, lpp.write_limit(-3000, active=True))
     wait_for_lpp_state(tc, LPC_LIMITED)
     limited_ts = wait_fired(tc, RULE_LIMITED)
@@ -285,7 +319,8 @@ def test_trigger_on_limit_and_release(tc: TestContext):
 
 
 def test_trigger_no_refire_on_limit_change(tc: TestContext):
-    """Changing the value of an active limit does not fire again."""
+    """Changing the value of an active limit without changing the level does not fire again."""
+    require_p9_eeg(tc)
     expect_ack(tc, lpp.write_limit(-3000, active=True))
     limited_ts = wait_fired(tc, RULE_LIMITED)
     expect_ack(tc, lpp.write_limit(-6000, active=True))
@@ -296,6 +331,7 @@ def test_trigger_no_refire_on_limit_change(tc: TestContext):
 
 def test_trigger_on_duration_expiry(tc: TestContext):
     """When the duration of the limit expires, "not limited" fires."""
+    require_p9_eeg(tc)
     expect_ack(tc, lpp.write_limit(-3000, active=True, duration=5))
     wait_fired(tc, RULE_LIMITED)
     wait_for_lpp_state(tc, LPC_UNLIMITED_CONTROLLED, timeout=15)
@@ -303,29 +339,47 @@ def test_trigger_on_duration_expiry(tc: TestContext):
 
 
 def test_trigger_disable_and_enable_eebus(tc: TestContext):
-    """Disabling EEBUS while limited fires "not limited" and disables the trigger.
-    Enabling EEBUS reports the initial state again and enables the trigger."""
+    """Disabling EEBUS while limited fires "not limited", as §9 EEG uses its default level of 100 %.
+    Enabling EEBUS fires "limited" again, as "init" uses the failsafe limit BASE_FAILSAFE."""
+    require_p9_eeg(tc)
     expect_ack(tc, lpp.write_limit(-3000, active=True))
     wait_fired(tc, RULE_LIMITED)
 
     set_eebus_enabled(tc, False)
     try:
         not_limited_ts = wait_fired(tc, RULE_NOT_LIMITED)
-        tc.wait_for(lambda: tc.assert_false(TRIGGER_EEBUS_LPP in tc.api("automation/state")["enabled_triggers"]))
+        tc.assert_true(TRIGGER_P9_EEG in tc.api("automation/state")["enabled_triggers"])
     finally:
         set_eebus_enabled(tc, True)
         # Disabling EEBUS closed the connection
         disconnect_guard(tc)
 
-    tc.wait_for(lambda: tc.assert_true(TRIGGER_EEBUS_LPP in tc.api("automation/state")["enabled_triggers"]))
     # "init" with the failsafe limit BASE_FAILSAFE below the unknown nominal maximum, written by the Energy Guard: limited
     wait_for_lpp_state(tc, LPC_INIT)
     wait_fired(tc, RULE_LIMITED, since=not_limited_ts)
 
 
+def test_trigger_disable_p9_eeg(tc: TestContext):
+    """Disabling §9 EEG while limited fires "not limited" and disables the trigger.
+    Enabling it reports the initial state again and enables the trigger."""
+    require_p9_eeg(tc)
+    expect_ack(tc, lpp.write_limit(-3000, active=True))
+    limited_ts = wait_fired(tc, RULE_LIMITED)
+
+    tc.api("p9_eeg/config_update", p9_eeg_config(enable=False))
+    not_limited_ts = wait_fired(tc, RULE_NOT_LIMITED)
+    tc.assert_false(TRIGGER_P9_EEG in tc.api("automation/state")["enabled_triggers"])
+
+    tc.api("p9_eeg/config_update", p9_eeg_config())
+    tc.assert_true(TRIGGER_P9_EEG in tc.api("automation/state")["enabled_triggers"])
+    wait_fired(tc, RULE_LIMITED, since=limited_ts)
+    tc.assert_eq(not_limited_ts, get_last_run(tc)[RULE_NOT_LIMITED])
+
+
 def test_trigger_failsafe(tc: TestContext):
     """The failsafe state counts as limited: Without heartbeat for 120 s the device enters failsafe (LPP-912) and the
     Failsafe Production Active Power Limit applies (LPP-901). Taking control again fires "not limited"."""
+    require_p9_eeg(tc)
     tc.set_test_timeout(300)
     peer.send_heartbeat()
     peer.heartbeat_enabled = False
@@ -337,6 +391,55 @@ def test_trigger_failsafe(tc: TestContext):
     peer.heartbeat_enabled = True
     take_control(tc, lpp)
     wait_fired(tc, RULE_NOT_LIMITED, since=limited_ts)
+
+
+# ---------------------------------------------------------------------------
+# §9 EEG
+# ---------------------------------------------------------------------------
+
+def wait_for_p9_eeg_state(tc: TestContext, **expected) -> dict:
+    def check() -> dict:
+        state = tc.api("p9_eeg/state")
+        for key, value in expected.items():
+            tc.assert_eq(value, state[key])
+        return state
+    return tc.wait_for(check)
+
+
+def test_p9_eeg_follows_lpp(tc: TestContext):
+    """§9 EEG with source EEBUS maps the LPP limit to the highest level that complies with it.
+    Without EEBUS the default level applies."""
+    require_p9_eeg(tc)
+    relays = p9_eeg_config()["relays"]
+    tc.api("p9_eeg/config_update", p9_eeg_config(default_level_pct=30))
+    wait_for_p9_eeg_state(tc, default_active=False, limit_active=False, level_pct=100)
+
+    expect_ack(tc, lpp.write_limit(-4200, active=True))
+    wait_for_p9_eeg_state(tc, limit_active=True, limit_w=4200, level_pct=30, limit_reachable=True)
+
+    if len(relays) > 1:
+        expect_ack(tc, lpp.write_limit(-2000, active=True))
+        wait_for_p9_eeg_state(tc, limit_active=True, limit_w=2000, level_pct=0)
+
+    expect_ack(tc, lpp.write_limit(-2000, active=False))
+    wait_for_p9_eeg_state(tc, limit_active=False, level_pct=100)
+
+    set_eebus_enabled(tc, False)
+    try:
+        wait_for_p9_eeg_state(tc, default_active=True, level_pct=30)
+    finally:
+        set_eebus_enabled(tc, True)
+        disconnect_guard(tc)
+
+
+def test_p9_eeg_written_failsafe_has_priority(tc: TestContext):
+    """The §9 EEG default level is only the pre-configured failsafe limit (LPP-021/1).
+    The failsafe limit written by the Energy Guard has priority (LPP-903)."""
+    require_p9_eeg(tc)
+    tc.api("p9_eeg/config_update", p9_eeg_config(default_level_pct=0))
+    time.sleep(1)
+    tc.assert_eq(BASE_FAILSAFE[0], lpp_state(tc)["failsafe_limit_power_w"])
+    tc.assert_eq(BASE_FAILSAFE[0], lpp.read_failsafe()[lpp.failsafe_power_key]["scaledNumber"]["number"])
 
 
 if __name__ == "__main__":

@@ -522,9 +522,9 @@ void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract
     power_contract_max_w = power_contract_max;
     logger.printfln("%s: Nominal maximum power %d W, contractual nominal maximum power %d W (0: unknown)", get_usecases_name(config_.usecase_type), power_max_w, power_contract_max_w);
 
-    // LPC-021/1, LPP-021/1: The pre-configured failsafe limit is the nominal maximum power, until the Energy Guard wrote a failsafe limit.
-    if (!failsafe_power_written && failsafe_power_limit_w != nominal_max_w()) {
-        failsafe_power_limit_w = nominal_max_w();
+    // LPC-021/1, LPP-021/1: The pre-configured failsafe limit applies until the Energy Guard wrote a failsafe limit.
+    if (!failsafe_power_written && failsafe_power_limit_w != preconfigured_failsafe_limit_w()) {
+        failsafe_power_limit_w = preconfigured_failsafe_limit_w();
         if (state_ == LoadcontrolState::Init || state_ == LoadcontrolState::Failsafe) {
             current_active_limit_w = failsafe_power_limit_w;
         }
@@ -537,6 +537,28 @@ void LoadPowerLimitUsecase::update_constraints(int power_max, int power_contract
     update_api();
     auto data = EVSEEntity::get_electrical_connection_characteristic_list_data();
     eebus.usecases->inform_subscribers(this->entity_address, feature_addresses.at(FeatureTypeEnumType::ElectricalConnection), data, "electricalConnectionCharacteristicListData");
+}
+
+void LoadPowerLimitUsecase::set_preconfigured_failsafe(int power_w)
+{
+    power_w = std::max(power_w, -1);
+    if (power_w == preconfigured_failsafe_w) {
+        return;
+    }
+    preconfigured_failsafe_w = power_w;
+
+    if (failsafe_power_written) {
+        // LPC-903, LPP-903: The failsafe limit written by the Energy Guard has priority
+        return;
+    }
+
+    failsafe_power_limit_w = preconfigured_failsafe_limit_w();
+    logger.printfln("%s: Pre-configured failsafe limit %d W", get_usecases_name(config_.usecase_type), failsafe_power_limit_w);
+    if (state_ == LoadcontrolState::Init || state_ == LoadcontrolState::Failsafe) {
+        current_active_limit_w = failsafe_power_limit_w;
+    }
+    update_api();
+    notify_failsafe_subscribers();
 }
 
 bool LoadPowerLimitUsecase::update_limit(const LimitWrite &write)
@@ -656,8 +678,8 @@ bool LoadPowerLimitUsecase::is_power_limited() const
         case LoadcontrolState::Failsafe:
             // LPC-901, LPP-901: The Failsafe Active Power Limit applies. It only limits if it is below the nominal maximum power.
             if (!config_.limit_is_positive && !nominal_max_known()) {
-                // The production nominal maximum is unknown: A failsafe limit written by the Energy Guard has to be assumed to limit.
-                return failsafe_power_written;
+                // The production nominal maximum is unknown: A written or pre-configured failsafe limit has to be assumed to limit.
+                return failsafe_power_written || preconfigured_failsafe_w >= 0;
             }
             return failsafe_power_limit_w < nominal_max_w();
         case LoadcontrolState::Startup:
@@ -938,7 +960,7 @@ void LoadPowerLimitUsecase::update_api() const
 #if EEBUS_ENABLE_LPP_USECASE()
     // Every state change ends with an update of the API. The state "startup" did not evaluate the failsafe values yet (LPP-901).
     if (config_.usecase_type == Usecases::LPP && state_ != LoadcontrolState::Startup) {
-        eebus.report_lpp_limited(is_power_limited());
+        eebus.report_lpp_limited(is_power_limited(), current_active_limit_w);
     }
 #endif
 }

@@ -111,6 +111,12 @@ void EMV2::pre_setup()
         [this](const Config *cfg) {
             const uint32_t index  = cfg->get("index" )->asUint();
             const bool     closed = cfg->get("closed")->asBool();
+#if MODULE_P9_EEG_AVAILABLE()
+            if (p9_eeg.is_relay_in_use(index)) {
+                logger.printfln("Ignoring automation action: Relay %lu is used by §9 EEG", index + 1);
+                return;
+            }
+#endif
             this->set_relay_output(index, closed);
         }
     );
@@ -195,6 +201,10 @@ void EMV2::register_urls()
             if (new_value != 255) {
                 if (new_value > 1) {
                     errmsg += "Relay output value out of range [0, 1].\n";
+#if MODULE_P9_EEG_AVAILABLE()
+                } else if (p9_eeg.is_relay_in_use(i)) {
+                    errmsg += "Cannot control relay output that is currently in use by §9 EEG.\n";
+#endif
                 } else {
                     set_relay_output(i, new_value);
                 }

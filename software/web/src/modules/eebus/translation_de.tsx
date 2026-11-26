@@ -91,16 +91,6 @@ let x = {
             "ski_required": "SKI wird benötigt",
             "ip_invalid": "IP-Adresse ist ungültig",
             "add_peer_failed": "Peer konnte nicht hinzugefügt werden"
-        },
-        "automation": {
-            "automation_trigger": "§9 EEG (EEBUS-Einspeisebegrenzung)",
-            "state": "Zustand",
-            "limited": "Ausgelöst",
-            "not_limited": "Nicht ausgelöst",
-            "trigger_disabled": "EEBUS ist deaktiviert",
-            "automation_trigger_text": /*FFN*/(limited: boolean) => limited
-                ? <>Wenn <b>§9 EEG</b> (EEBUS-Einspeisebegrenzung) <b>ausgelöst</b> wird,{" "}</>
-                : <>Wenn <b>§9 EEG</b> (EEBUS-Einspeisebegrenzung) <b>nicht mehr ausgelöst</b> ist,{" "}</>/*NF*/
         }
     }
 }

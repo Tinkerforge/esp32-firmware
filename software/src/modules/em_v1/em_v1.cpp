@@ -85,6 +85,12 @@ void EMV1::pre_setup()
             {"closed", Config::Bool(false)}
         }),
         [this](const Config *cfg) {
+#if MODULE_P9_EEG_AVAILABLE()
+            if (p9_eeg.is_relay_in_use(0)) {
+                logger.printfln("Ignoring automation action: Relay is used by §9 EEG");
+                return;
+            }
+#endif
             this->set_output(cfg->get("closed")->asBool());
         }
     );

@@ -25,24 +25,24 @@ import { InputSelect } from "../../ts/components/input_select";
 import { FormRow } from "../../ts/components/form_row";
 import * as util from "../../ts/util";
 
-export type EEBusLPPAutomationTrigger = [
-    AutomationTriggerID.EEBusLPP,
+export type P9EegAutomationTrigger = [
+    AutomationTriggerID.P9Eeg,
     {
         limited: boolean;
     },
 ];
 
-function get_eebus_lpp_table_children(trigger: EEBusLPPAutomationTrigger) {
-    return __("eebus.automation.automation_trigger_text")(trigger[1].limited);
+function get_p9_eeg_table_children(trigger: P9EegAutomationTrigger) {
+    return __("p9_eeg.automation.automation_trigger_text")(trigger[1].limited);
 }
 
-function get_eebus_lpp_edit_children(trigger: EEBusLPPAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
+function get_p9_eeg_edit_children(trigger: P9EegAutomationTrigger, on_trigger: (trigger: AutomationTrigger) => void) {
     return [
-        <FormRow label={__("eebus.automation.state")}>
+        <FormRow label={__("p9_eeg.automation.state")}>
             <InputSelect
                 items={[
-                    ["1", __("eebus.automation.limited")],
-                    ["0", __("eebus.automation.not_limited")],
+                    ["1", __("p9_eeg.automation.limited")],
+                    ["0", __("p9_eeg.automation.not_limited")],
                 ]}
                 value={trigger[1].limited ? "1" : "0"}
                 onValue={(v) => {
@@ -53,9 +53,9 @@ function get_eebus_lpp_edit_children(trigger: EEBusLPPAutomationTrigger, on_trig
     ];
 }
 
-function new_eebus_lpp_config(): AutomationTrigger {
+function new_p9_eeg_config(): AutomationTrigger {
     return [
-        AutomationTriggerID.EEBusLPP,
+        AutomationTriggerID.P9Eeg,
         {
             limited: true,
         },
@@ -64,13 +64,13 @@ function new_eebus_lpp_config(): AutomationTrigger {
 
 export function pre_init() {
     return {
-        [AutomationTriggerID.EEBusLPP]: {
-            name: () => __("eebus.automation.automation_trigger"),
-            new_config: new_eebus_lpp_config,
+        [AutomationTriggerID.P9Eeg]: {
+            name: () => __("p9_eeg.automation.automation_trigger"),
+            new_config: new_p9_eeg_config,
             clone_config: (trigger: AutomationTrigger) => [trigger[0], {...trigger[1]}] as AutomationTrigger,
-            get_edit_children: get_eebus_lpp_edit_children,
-            get_table_children: get_eebus_lpp_table_children,
-            get_disabled_reason: () => __("eebus.automation.trigger_disabled"),
+            get_edit_children: get_p9_eeg_edit_children,
+            get_table_children: get_p9_eeg_table_children,
+            get_disabled_reason: () => __("p9_eeg.automation.trigger_disabled"),
         },
     };
 }

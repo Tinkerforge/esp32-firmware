@@ -138,12 +138,22 @@ public:
     /**
      * @brief Update the constraints of the system (Scenario 4). A value of 0 means unknown, it is not reported.
      *
-     * Until the Energy Guard wrote a Failsafe Active Power Limit, the failsafe limit is the nominal maximum power (LPC-021/1).
+     * Until the Energy Guard wrote a Failsafe Active Power Limit, the failsafe limit is the pre-configured failsafe limit
+     * or the nominal maximum power (LPC-021/1).
      *
      * @param power_max Nominal maximum power the system is capable of (LPC-041). Only for devices, not for energy managers.
      * @param power_contract_max Nominal maximum power the contract allows (LPC-042). Only for energy managers.
      */
     void update_constraints(int power_max = 0, int power_contract_max = 0);
+
+    /**
+     * @brief Set the pre-configured Failsafe Active Power Limit (LPC-021/1, LPP-021/1), for example from a user interface.
+     *
+     * It is used until the Energy Guard writes a Failsafe Active Power Limit (LPC-903, LPP-903).
+     *
+     * @param power_w The limit in W, -1 to use the nominal maximum power
+     */
+    void set_preconfigured_failsafe(int power_w);
 
     [[nodiscard]] std::vector<FeatureTypeEnumType> get_supported_features() const override
     {
@@ -174,7 +184,7 @@ public:
      * True in state "limited", and in states "init" and "failsafe" if the
      * Failsafe Active Power Limit is below the nominal maximum power (LPC-901, LPP-901).
      * For LPP with an unknown nominal maximum power, the failsafe limit counts as
-     * limiting once it was written by the Energy Guard.
+     * limiting once it was written by the Energy Guard or pre-configured.
      */
     [[nodiscard]] bool is_power_limited() const;
 
@@ -265,6 +275,11 @@ private:
     {
         return power_max_w > 0 || power_contract_max_w > 0;
     }
+    /** @brief The failsafe limit used until the Energy Guard writes one (LPC-021/1, LPP-021/1). */
+    [[nodiscard]] int preconfigured_failsafe_limit_w() const
+    {
+        return preconfigured_failsafe_w >= 0 ? preconfigured_failsafe_w : nominal_max_w();
+    }
     /** @brief The effective limit in the states "unlimited/controlled" and "unlimited/autonomous". */
     [[nodiscard]] int unlimited_limit_w() const;
     /** @brief Restore the failsafe values written by the Energy Guard before the last restart (LPC 2.6.2.1, LPC-903). */
@@ -293,7 +308,8 @@ private:
 
     // Device Configuration Data (Failsafe)
     int failsafe_power_limit_w = EEBUS_LPC_INITIAL_ACTIVE_POWER_CONSUMPTION; ///< Always >= 0 (LPC: IG-LPC 3.6, LPP-010)
-    bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit. Otherwise it follows the nominal maximum power.
+    bool failsafe_power_written = false; ///< The Energy Guard wrote the Failsafe Active Power Limit. Otherwise it is preconfigured_failsafe_limit_w().
+    int preconfigured_failsafe_w = -1;   ///< Pre-configured Failsafe Active Power Limit, -1 if the nominal maximum power is used
     seconds_t failsafe_duration = 2_h; ///< Only used if owns_failsafe_duration(), see get_failsafe_duration()
     uint64_t failsafe_expiry_timer = 0;
     micros_t failsafe_expiry_endtime = 0_us; ///< End of the Failsafe Duration Minimum in failsafe state (monotonic, now_us())

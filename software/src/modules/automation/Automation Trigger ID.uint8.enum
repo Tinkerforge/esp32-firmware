@@ -25,7 +25,7 @@ Temperature Now
 Meter Value
 Reboot
 P14a Enwg
-EEBus LPP
+P9 Eeg
 Vendor Trigger 3 = 252 // Reserved for downstream extensions
 Vendor Trigger 2 = 253 // Reserved for downstream extensions
 Vendor Trigger 1 = 254 // Reserved for downstream extensions
