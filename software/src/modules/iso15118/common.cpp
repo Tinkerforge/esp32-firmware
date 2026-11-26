@@ -57,19 +57,24 @@ struct EVCCVendorOUI {
 
 static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
     {{0x44, 0x1D, 0xB1}, EVCCVendor::AptivService}, // OBC seen in CUPRA e-HYBRID
+    {{0x64, 0x69, 0x11}, EVCCVendor::AptivService}, // OBC seen in Audi
     {{0x70, 0xB3, 0xD6}, EVCCVendor::Audi},
     {{0x18, 0x4C, 0xAE}, EVCCVendor::Aumovio},      // OBC seen in Renault Megane E-Tech
     {{0x00, 0x01, 0xA9}, EVCCVendor::BMW},
     {{0x10, 0xBD, 0x43}, EVCCVendor::Bosch},        // OBC seen in VW ID.7
+    {{0x2C, 0xCA, 0x75}, EVCCVendor::Bosch},        // OBC seen in BMW iX3
     {{0x38, 0x1F, 0x26}, EVCCVendor::Bosch},        // OBC seen in Citroën e-C3
     {{0x48, 0x31, 0x33}, EVCCVendor::Bosch},
     {{0x00, 0x18, 0x23}, EVCCVendor::DeltaElectronics}, // OBC seen in BMW iX2
+    {{0xC4, 0x08, 0x98}, EVCCVendor::DropbeatsTechnology}, // OBC seen in BYD Seal U DM-i and BYD Atto 3 Evo
     {{0xEC, 0xFA, 0x03}, EVCCVendor::FCA},
     {{0x00, 0x26, 0xB4}, EVCCVendor::Ford},
     {{0x00, 0x76, 0xB6}, EVCCVendor::Ford},
     {{0x9C, 0x36, 0xF8}, EVCCVendor::Hyundai},
+    {{0xF0, 0x7F, 0x0C}, EVCCVendor::Kostal},       // OBC seen in BMW i3s
     {{0xC0, 0xDC, 0xAB}, EVCCVendor::LGInnotek},    // OBC seen in Dacia Spring
     {{0xAC, 0x96, 0x5B}, EVCCVendor::LucidMotors},
+    {{0xA4, 0x53, 0xEE}, EVCCVendor::MAHLE},
     {{0x3C, 0xCE, 0x15}, EVCCVendor::MercedesBenz},
     {{0x8C, 0x14, 0x7D}, EVCCVendor::Nio},
     {{0xF0, 0xF6, 0x9C}, EVCCVendor::Nio},
@@ -81,8 +86,12 @@ static constexpr EVCCVendorOUI evcc_vendor_ouis[] = {
     {{0x98, 0xED, 0x5C}, EVCCVendor::Tesla},
     {{0xD4, 0x4F, 0x14}, EVCCVendor::Tesla},
     {{0xDC, 0x44, 0x27}, EVCCVendor::Tesla},
+    {{0xC0, 0xD9, 0x41}, EVCCVendor::VMAX},
+    {{0xFC, 0xA4, 0x7A}, EVCCVendor::VMAX},
     {{0x00, 0x7D, 0xFA}, EVCCVendor::VolkswagenGroup},
     {{0x00, 0x50, 0xC2}, EVCCVendor::Volvo},
+    {{0x90, 0x12, 0xA1}, EVCCVendor::WeCorporation}, // OBC seen in Hyundai Ioniq 5
+    {{0xE0, 0x0E, 0xE1}, EVCCVendor::WeCorporation}, // OBC seen in Hyundai Kona
 };
 
 void Common::set_evcc_vendor(EVCCVendor vendor)
