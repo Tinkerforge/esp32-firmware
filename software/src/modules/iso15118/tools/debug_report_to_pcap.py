@@ -51,7 +51,11 @@ def main(filepath):
         iso_data = data.split('__begin_iso15118_ll__\n')[1].split('__end_iso15118_ll__')[0]
         qca_list = []
         for line in iso_data.splitlines():
-            t, qca = line.split(' ')
+            parts = line.split(' ')
+            # The first line can be a partial line without timestamp if the ring buffer wrapped
+            if len(parts) != 2:
+                continue
+            t, qca = parts
             qca_list.extend([int(qca[i:i+2], 16) for i in range(0, len(qca), 2)])
 
             # TODO: This is not perfect. If there is a recv-buffer without footer
