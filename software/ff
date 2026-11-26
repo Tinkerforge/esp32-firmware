@@ -2,12 +2,14 @@
 
 import argparse
 import os
+import re
 import sys
 import signal
 import subprocess
 import serial
 import time
 from tinkerforge_util.colored import red, green
+from pathlib import Path
 
 
 parser = argparse.ArgumentParser()
@@ -19,6 +21,7 @@ parser.add_argument("-e", "--erase", action="store_true")
 parser.add_argument("-r", "--reboot", action="store_true")
 parser.add_argument("--factory-reset", action="store_true")
 parser.add_argument("--exit-on-network-connected", action="store_true")
+parser.add_argument("-d", "--decode", action="store_true")
 args = parser.parse_args()
 
 def get_latest_fw(fw_type=''):
@@ -55,6 +58,8 @@ if args.erase:
 
     subprocess.check_call("uv run esptool --port {} --chip esp32 erase-flash".format(port), shell=True)
 
+firmware = None
+
 if not args.serial_only:
     if args.firmware is None:
         firmware = get_latest_fw()
@@ -80,10 +85,15 @@ if args.reboot:
     subprocess.check_call("uv run esptool --port {} --chip esp32 --baud 921600 run".format(port), shell=True)
 
 if not args.no_serial:
+    buf = b""
     while True:
         try:
             time.sleep(0.1)
             with serial.Serial(port, 115200, timeout=1) as ser:
+                backtrace = None
+                decoding = False
+                elf = None
+
                 while ser.is_open:
                     data = ser.read()
                     if not data: # Read timed out
@@ -99,6 +109,42 @@ if not args.no_serial:
 
                     sys.stdout.buffer.write(data)
                     sys.stdout.flush()
+
+                    if args.decode:
+                        if len(buf) > 10000:
+                            buf = buf[2000:]
+
+                        buf = buf + data
+
+                        if b"Backtrace:" in data:
+                            backtrace = None
+                            decoding = True
+
+                        if not decoding:
+                            continue
+
+                        if (backtrace_start := buf.rfind(b"Backtrace: 0x")) >= 0:
+                            if (backtrace_end := buf.find(b"\n", backtrace_start)) >= 0:
+                                backtrace = buf[backtrace_start + len("Backtrace: "):backtrace_end].decode("utf-8")
+
+                        if backtrace is not None:
+                            if elf is None:
+                                if firmware is None:
+                                    if (fw_start := buf.rfind(b"| firmware_update  | Partitions: app0")) >= 0:
+                                        if (fw_end := buf.find(b"\n", backtrace_start)) >= 0:
+                                            if (match := re.search(rb"running, \d+\.\d+\.\d+\+([a-fA-F0-9]+)", buf[fw_start:fw_end])) is not None:
+                                                elfs = list(Path("./build/").glob(f"*{match.group(1).decode('utf-8')}*.elf"))
+                                                if len(elfs) == 1:
+                                                    elf = elfs[0]
+                                else:
+                                    elf = firmware.replace("_merged.bin", ".elf")
+
+                        if backtrace is not None and elf is not None:
+                            subprocess.run(["./decode", "-f", elf] + backtrace.strip().split(" "))
+                            backtrace = None
+                            elf = None
+                            decoding = False
+
         except KeyboardInterrupt:
             sys.exit(0)
         except Exception:
