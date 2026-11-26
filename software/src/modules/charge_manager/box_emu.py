@@ -1,4 +1,10 @@
 #!/usr/bin/env -S uv run --script
+#
+# /// script
+# dependencies = [
+#     "PyQt5",
+# ]
+# ///
 
 import socket
 import struct
