@@ -92,10 +92,19 @@ void ChargeAuthorization::notify_auth(int16_t user_id, millis_t last_seen, CMAut
 
     bool blink_handled = false;
 #if MODULE_OCPP_AVAILABLE()
+    // TODO: this is a hack but good enough for now.
     if (auth_type == CMAuthType::NFC || auth_type == CMAuthType::InjectedNFC) {
-        // TODO: this is a hack but good enough for now.
         char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1];
-        nfc.get_last_tag_seen(nullptr, nullptr, buf_ocpp);
+        remove_separator(dst->get("auth_info")->get()->get("tag_id")->asEphemeralCStr(), buf_ocpp);
+        blink_handled = ocpp.on_tag_seen(buf_ocpp);
+    } else if (auth_type == CMAuthType::EV || auth_type == CMAuthType::InjectedEV) {
+        // There seems to be consensus to send the MAC address "01:02:03:04:05:06" as "VID:010203040506"
+        // See for example:
+        // https://github.com/Autocharge-EV/Autocharge/blob/master/autocharge-final.pdf
+        // https://cdn.vector.com/cms/content/products/vcharm/docs/WhitePaper_Identification_of_ElectricVehicles_in_CSMS_via_OCPP.pdf
+        // https://support.charge-keeper.com/en/features/auto-charge#auto-charge-identifier-format
+        char buf_ocpp[NFC_TAG_ID_STRING_WITHOUT_SEPARATOR_LENGTH + 1 + 4 /*VID:*/] = "VID:\0";
+        remove_separator(dst->get("auth_info")->get()->get("mac")->asEphemeralCStr(), buf_ocpp + 4);
         blink_handled = ocpp.on_tag_seen(buf_ocpp);
     }
 #endif
