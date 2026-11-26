@@ -36,6 +36,10 @@ def make_config(enable: bool = True, source: int = SOURCE_API, inverter_power_w:
     }
 
 
+def pad_relays(*levels: int) -> list[int]:
+    return list(levels) + [RELAY_UNUSED] * (relay_count - len(levels))
+
+
 def expect_rejected(tc: TestContext, config: dict):
     try:
         tc.api("p9_eeg/config_update", config)
@@ -79,8 +83,8 @@ def test_relay_required(tc: TestContext):
 
 
 def test_invalid_relay_level(tc: TestContext):
-    expect_rejected(tc, make_config(relays=[40] + [RELAY_UNUSED] * (relay_count - 1)))
-    expect_rejected(tc, make_config(relays=[100] + [RELAY_UNUSED] * (relay_count - 1)))
+    expect_rejected(tc, make_config(relays=pad_relays(40)))
+    expect_rejected(tc, make_config(relays=pad_relays(100)))
 
 
 def test_duplicate_relay_level(tc: TestContext):
@@ -90,7 +94,7 @@ def test_duplicate_relay_level(tc: TestContext):
 
 
 def test_default_level_must_be_available(tc: TestContext):
-    expect_rejected(tc, make_config(relays=[30] + [RELAY_UNUSED] * (relay_count - 1), default_level_pct=60))
+    expect_rejected(tc, make_config(relays=pad_relays(30), default_level_pct=60))
     expect_rejected(tc, make_config(default_level_pct=50))
 
 
@@ -120,7 +124,7 @@ def test_level_mapping(tc: TestContext):
 
 def test_limit_not_reachable(tc: TestContext):
     """Below the lowest level the lowest level is used and reported as not reachable."""
-    tc.api("p9_eeg/config_update", make_config(relays=[60] + [RELAY_UNUSED] * (relay_count - 1)))
+    tc.api("p9_eeg/config_update", make_config(relays=pad_relays(60)))
     set_control(tc, True, 5000)
     wait_for_state(tc, level_pct=60, limit_reachable=False)
     set_control(tc, True, 6000)
@@ -130,10 +134,10 @@ def test_limit_not_reachable(tc: TestContext):
 
 
 def test_disable(tc: TestContext):
-    tc.api("p9_eeg/config_update", make_config())
+    tc.api("p9_eeg/config_update", make_config(relays=pad_relays(0)))
     set_control(tc, True, 0)
     wait_for_state(tc, level_pct=0)
-    tc.api("p9_eeg/config_update", make_config(enable=False))
+    tc.api("p9_eeg/config_update", make_config(enable=False, relays=pad_relays(0)))
     wait_for_state(tc, limit_active=False, level_pct=100, default_active=False)
 
 
@@ -143,7 +147,7 @@ def test_eebus_source_without_eebus(tc: TestContext):
     try:
         if eebus_config["enable"]:
             tc.api("eebus/config_update", {**eebus_config, "enable": False})
-        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, default_level_pct=0))
+        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, relays=pad_relays(0), default_level_pct=0))
         wait_for_state(tc, default_active=True, level_pct=0)
     finally:
         if eebus_config["enable"]:
@@ -162,19 +166,19 @@ def test_eebus_preconfigured_failsafe(tc: TestContext):
         def lpp_failsafe_w() -> int:
             return tc.api("eebus/usecases")["lpp"]["failsafe_limit_power_w"]
 
-        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, default_level_pct=0))
+        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, relays=pad_relays(0), default_level_pct=0))
         time.sleep(1)
         if lpp_failsafe_w() != 0:
             tc.skip("The LPP failsafe limit was written by an Energy Guard")
 
-        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, default_level_pct=30))
+        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, relays=pad_relays(30), default_level_pct=30))
         # Rounded up, so that the failsafe limit maps back to 30 %
         tc.wait_for(lambda: tc.assert_eq(3001, lpp_failsafe_w()))
 
-        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, default_level_pct=100))
+        tc.api("p9_eeg/config_update", make_config(source=SOURCE_EEBUS, inverter_power_w=10001, relays=pad_relays(30), default_level_pct=100))
         tc.wait_for(lambda: tc.assert_ne(3001, lpp_failsafe_w()))
 
-        tc.api("p9_eeg/config_update", make_config(source=SOURCE_API, inverter_power_w=10001, default_level_pct=0))
+        tc.api("p9_eeg/config_update", make_config(source=SOURCE_API, inverter_power_w=10001, relays=pad_relays(0), default_level_pct=0))
         tc.wait_for(lambda: tc.assert_ne(0, lpp_failsafe_w()))
     finally:
         if not eebus_config["enable"]:
