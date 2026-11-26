@@ -348,7 +348,8 @@ void ISO15118::pre_setup()
                                      update.get("read_soc")->asBool() ||
                                      update.get("charge_via_iso15118")->asBool();
 
-        if (will_be_enabled != was_enabled) {
+        // The config restore at boot also passes through here. setup() and register_urls() handle the boot case.
+        if (initialized && will_be_enabled != was_enabled) {
             if (!will_be_enabled && modem_firmware.is_flashing()) {
                 return "PLC modem firmware update in progress, try again later.";
             }
@@ -372,15 +373,9 @@ void ISO15118::pre_setup()
                 //       If IEC 61851 charge is ongoing, we should only change the protocol after the charge is done.
                 //       If no charge is ongoing, we can change the protocol immediately.
                 //       If the EVSE Bricklet is already in ISO 15118 mode, we can continue with the state it is already in.
-                if (initialized) {
-                    // Re-enabled at runtime.
-                    // SLAC may still be in ModemDisabled from an earlier session and an unplug while disabled skipped the state A cleanup.
-                    iso15118.trace("ISO15118: Enabled, rearming for next EV");
-                    rearm_for_next_ev();
-                } else {
-                    evse_v2.set_plc_modem(true);
-                    iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_ISO15118, 50);
-                }
+                // SLAC may still be in ModemDisabled from an earlier session and an unplug while disabled skipped the state A cleanup.
+                iso15118.trace("ISO15118: Enabled, rearming for next EV");
+                rearm_for_next_ev();
             } else {
                 // TODO: Close sockets and set is_setup = false
                 task_scheduler.cancel(state_machine_task);
@@ -399,6 +394,7 @@ void ISO15118::pre_setup()
                 //       If the EVSE Bricklet is already in IEC 61851 mode, we can continue with the state it is already in.
                 iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 evse_v2.set_plc_modem(false);
+                slac.state = SLACState::ModemDisabled;
                 qca700x.disable();
             }
         }
@@ -632,6 +628,8 @@ void ISO15118::register_events()
             cancel_pending_tasks();
 
             if (!is_enabled()) {
+                // In IEC61851_TEMPORARY the EVSE Bricklet switches itself back to ISO 15118 on State A.
+                iso15118.set_charging_protocol(TF_EVSE_V2_CHARGING_PROTOCOL_IEC61851_PERMANENT, 1000);
                 return EventResult::OK;
             }
 
