@@ -84,7 +84,7 @@ let x = {
 
             "battery_import_error_json_malformed": "Das JSON-Format ist beschädigt.",
             "battery_import_error_class_unknown": "Klasse ist unbekannt.",
-            "battery_import_error_import_unsupported": "Importieren wird für diese Klasse nicht unterstüzt.",
+            "battery_import_error_import_unsupported": "Importieren wird für diese Klasse nicht unterstützt.",
             "battery_import_error_config_malformed": "Das Konfigurations-Format ist beschädigt.",
             "battery_export_basename": "Batteriespeicher-Konfiguration",
 
