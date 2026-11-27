@@ -46,6 +46,7 @@ tests = [
     "ocpp", # ocpp/*
     "websockets", # ocpp/*
     "pikepdf", # charge_tracker/pdf_chargelog
+    "pymodbus == 3.12.1", # modbus_tcp/modbus_tcp
 ]
 
 iso15118 = [
